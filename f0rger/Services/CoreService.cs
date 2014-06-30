@@ -6,7 +6,7 @@ using System.Text;
 
 namespace f0rger
 {
-    public abstract class Core : IAutoTamper, IFiddlerExtension
+    public abstract class CoreService : IAutoTamper, IFiddlerExtension
     {
         public bool Enable = false;
 
