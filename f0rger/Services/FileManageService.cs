@@ -71,12 +71,16 @@ namespace f0rger
         /// 从挂载列表中删除文件或者文件夹
         /// </summary>
         /// <param name="file"></param>
-        public static void Remove(string file)
+        public static void Remove(string file,bool refresh=true)
         {
             if (fileList.ContainsKey(file))
             {
                 fileList.Remove(file);
-                RefreshMockList();
+                if (refresh)
+                {
+                    //批量删除时,最后再手工刷新
+                    RefreshMockList();
+                }
             }
         }
 

@@ -20,7 +20,7 @@ namespace f0rger
         /// <summary>
         /// 是否显示右下角的挂载提示窗口
         /// </summary>
-        public bool EnableTip { get; set; }
+        public bool ShowTip { get; set; }
 
         /// <summary>
         /// 是否显示日志信息
@@ -43,7 +43,7 @@ namespace f0rger
         public ConfigEntity()
         {
             Enable = true;
-            EnableTip = true;
+            ShowTip = true;
             DebugMode = false;
             Profiles = new ProfileEntityList();
             Files = new FileMockEntityList();

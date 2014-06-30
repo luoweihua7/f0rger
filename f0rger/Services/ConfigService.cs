@@ -26,7 +26,7 @@ namespace f0rger
                 FileStream fs = new FileStream(Configs.ConfigPath, FileMode.Open);
                 try
                 {
-                    formatter.Binder = new ConfigBinder();
+                    formatter.Binder = new ConfigBinder(); //反序列化的时候需要有一个转换器
                     config = (ConfigEntity)formatter.Deserialize(fs);
                 }
                 catch (Exception err)
