@@ -32,5 +32,7 @@ namespace f0rger
         /// </summary>
         public static string Color = "#000000";
         public static string BgColor = "#f0f0f0";
+
+        public static string TabName = "f0rger";
     }
 }

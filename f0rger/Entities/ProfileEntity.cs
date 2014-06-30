@@ -7,6 +7,7 @@ namespace f0rger
     /// <summary>
     /// 挂载的站点配置
     /// </summary>
+    [Serializable]
     public class ProfileEntity
     {
         /// <summary>
@@ -23,5 +24,11 @@ namespace f0rger
         /// 域名列表
         /// </summary>
         public List<string> Hosts { get; set; }
+    }
+
+    [Serializable]
+    public class ProfileEntityList : List<ProfileEntity>
+    {
+        //继承自泛型List,并标记为可序列化
     }
 }

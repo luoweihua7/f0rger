@@ -41,7 +41,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configs.cs" />
+    <Compile Include="Entities\ConfigEntity.cs" />
+    <Compile Include="Entities\FileHookEntity.cs" />
     <Compile Include="Entities\FileMockEntity.cs" />
+    <Compile Include="Entities\ProfileEntity.cs" />
     <Compile Include="Forms\FiddlerTabPage.cs" />
     <Compile Include="Forms\ProfileFrm.cs">
       <SubType>Form</SubType>
@@ -55,9 +58,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Services\CoreService.cs" />
-    <Compile Include="Entities\ConfigEntity.cs" />
-    <Compile Include="Entities\FileHookEntity.cs" />
-    <Compile Include="Entities\ProfileEntity.cs" />
     <Compile Include="Forms\MiniTip.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -74,7 +74,6 @@
   <ItemGroup>
     <Content Include="includes\icon.png" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Include="Forms\MiniTip.resx">
       <DependentUpon>MiniTip.cs</DependentUpon>

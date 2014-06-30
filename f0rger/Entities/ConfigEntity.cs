@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 
+using System.Runtime.Serialization;
+
 namespace f0rger
 {
     /// <summary>
     /// 功能设置参数
     /// </summary>
+    [Serializable]
     public class ConfigEntity
     {
         /// <summary>
@@ -27,12 +30,12 @@ namespace f0rger
         /// <summary>
         /// 挂载配置(如灰度,全网等)
         /// </summary>
-        public List<ProfileEntity> Profiles { get; set; }
+        public ProfileEntityList Profiles { get; set; }
 
         /// <summary>
         /// 挂载的文件列表
         /// </summary>
-        public List<FileMockEntity> Files { get; set; }
+        public FileMockEntityList Files { get; set; }
 
         /// <summary>
         /// 配置类
@@ -42,8 +45,8 @@ namespace f0rger
             Enable = true;
             EnableTip = true;
             DebugMode = false;
-            Profiles = new List<ProfileEntity>();
-            Files = new List<FileMockEntity>();
+            Profiles = new ProfileEntityList();
+            Files = new FileMockEntityList();
         }
     }
 }

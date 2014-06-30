@@ -26,13 +26,7 @@ namespace f0rger
         /// 对应路径下的所有文件
         /// </summary>
         public List<string> Files { get; set; }
-
-        /// <summary>
-        /// 安插一个监听类,在文件发生变动时,可以快速的刷新列表
-        /// <para>TODO</para>
-        /// </summary>
-        private FileSystemWatcher fsw = new FileSystemWatcher();
-
+        
         /// <summary>
         /// 添加到列表的文件对象
         /// </summary>

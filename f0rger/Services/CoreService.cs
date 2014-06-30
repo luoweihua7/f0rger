@@ -14,11 +14,6 @@ namespace f0rger
     {
         public bool Enable = false;
 
-        public virtual void InitializeComponent()
-        {
-
-        }
-
         #region 虚函数,作为开关和逻辑处理
         /// <summary>
         /// 处理请求
@@ -85,7 +80,7 @@ namespace f0rger
 
         public virtual void OnLoad()
         {
-            InitializeComponent();
+
         }
         #endregion
     }

@@ -35,7 +35,7 @@ namespace f0rger
         /// <para>通过添加文件来触发提示窗口</para>
         /// </summary>
         /// <param name="string">文件名称</param>
-        public void Add(string fileName)
+        public void Show(string fileName)
         {
             listBox.Items.Add(fileName);
             this.Show();

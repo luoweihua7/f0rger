@@ -147,7 +147,7 @@ namespace f0rger
                 }
             }
 
-            LogService.Log("列表刷新完成," + fileMockList.Count + "个文件挂载中");
+            LogService.Log("File List loaded, hooking " + fileMockList.Count + " files.");
         }
         #endregion
 

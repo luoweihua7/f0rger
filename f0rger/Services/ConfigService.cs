@@ -4,6 +4,8 @@ using System.Text;
 
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using System.Runtime.Serialization;
+using System.Reflection;
 
 namespace f0rger
 {
@@ -24,6 +26,7 @@ namespace f0rger
                 FileStream fs = new FileStream(Configs.ConfigPath, FileMode.Open);
                 try
                 {
+                    formatter.Binder = new ConfigBinder();
                     config = (ConfigEntity)formatter.Deserialize(fs);
                 }
                 catch (Exception err)
@@ -44,6 +47,12 @@ namespace f0rger
         public static bool Save(ConfigEntity config)
         {
             var result = false;
+
+            if (!Directory.Exists(Configs.ConfigDir))
+            {
+                Directory.CreateDirectory(Configs.ConfigDir);
+            }
+
             FileStream fs = new FileStream(Configs.ConfigPath, FileMode.Create); //创建or覆盖
             try
             {
@@ -52,7 +61,7 @@ namespace f0rger
             }
             catch (Exception err)
             {
-                LogService.Log(err.Message);
+                System.Windows.Forms.MessageBox.Show(err.Message);
             }
             finally
             {
@@ -60,7 +69,17 @@ namespace f0rger
                 fs.Close();
                 fs.Dispose();
             }
+
             return result;
         }
     }
+
+    public class ConfigBinder : SerializationBinder
+    {
+        public override Type BindToType(string assemblyName, string typeName)
+        {
+            Assembly ass = Assembly.GetExecutingAssembly();
+            return ass.GetType(typeName);
+        }
+    } 
 }

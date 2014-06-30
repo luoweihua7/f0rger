@@ -20,6 +20,11 @@ namespace f0rger
 
         protected ConfigEntity config;
 
+        public virtual void OnMatchSession(string fileName)
+        {
+            //这个主要是用来显示右下角提示的
+        }
+
         public override void HandlerRequest(Fiddler.Session session, string fileName = null)
         {
             string path = FileManageService.GetMockFilePath(fileName);
@@ -27,6 +32,9 @@ namespace f0rger
             {
                 session.utilCreateResponseAndBypassServer();
                 session.LoadRequestBodyFromFile(path);
+
+                //命中文件
+                OnMatchSession(fileName);
             }
         }
     }
