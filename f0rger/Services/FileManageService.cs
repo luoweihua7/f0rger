@@ -27,11 +27,27 @@ namespace f0rger
 
         #region 供界面调用的方法
         /// <summary>
+        /// 读取配置成功后初始化监听列表
+        /// </summary>
+        /// <param name="files">挂载的文件列表</param>
+        public static void Initialize(List<FileMockEntity> files)
+        {
+            foreach (FileMockEntity item in files)
+            {
+                Add(item.Path, item.Enable, false); //不刷新挂载列表.全部添加完成后收工刷新
+            }
+
+            RefreshMockList(); //收工调用刷新
+        }
+
+        /// <summary>
         /// 添加文件或者文件夹到挂载列表
         /// </summary>
         /// <param name="file">文件或者文件夹的完整路径</param>
+        /// <param name="enable">是否启用挂载</param>
+        /// <param name="refresh">是否刷新挂载列表.初始化时,不需要刷新.在完成之后才刷新</param>
         /// <returns></returns>
-        public static bool Add(string file, bool enable = true)
+        public static bool Add(string file, bool enable = true, bool refresh = true)
         {
             if (fileList.ContainsKey(file))
             {
@@ -40,9 +56,9 @@ namespace f0rger
             }
             else
             {
-                var fileHookItem = new FileHookItem(file, enable);
+                var fileHookItem = new FileHookEntity(file, enable, refresh);
                 fileList.Add(file, fileHookItem);
-                if (enable)
+                if (enable && refresh)
                 {
                     RefreshMockList();
                 }
@@ -69,14 +85,17 @@ namespace f0rger
         /// </summary>
         /// <param name="file"></param>
         /// <param name="enable"></param>
-        public static void Update(string file, bool enable)
+        public static void Update(string file, bool enable, bool refresh = true)
         {
             if (fileList.ContainsKey(file))
             {
-                var item = (FileHookItem)fileList[file];
+                var item = (FileHookEntity)fileList[file];
                 item.Enable = enable;
 
-                RefreshMockList();
+                if (refresh)
+                {
+                    RefreshMockList();
+                }
             }
         }
 
@@ -92,7 +111,7 @@ namespace f0rger
                 duplicateList.Clear(); //清理文件名重复列表
                 for (int i = 0, len = fileList.Count; i < len; i++)
                 {
-                    var item = (FileHookItem)fileList[i];
+                    var item = (FileHookEntity)fileList[i];
                     item.Refresh();
 
                     foreach (string path in item.Files)

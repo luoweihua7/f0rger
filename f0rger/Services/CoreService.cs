@@ -6,9 +6,18 @@ using System.Text;
 
 namespace f0rger
 {
+    /// <summary>
+    /// 插件核心类
+    /// <para>设计目的:一个dll中包含多个功能时,可以分别继承</para>
+    /// </summary>
     public abstract class CoreService : IAutoTamper, IFiddlerExtension
     {
         public bool Enable = false;
+
+        public virtual void InitializeComponent()
+        {
+
+        }
 
         #region 虚函数,作为开关和逻辑处理
         /// <summary>
@@ -31,12 +40,12 @@ namespace f0rger
         #endregion
 
         #region Fiddler接口实现
-        public void AutoTamperRequestAfter(Session oSession)
+        public virtual void AutoTamperRequestAfter(Session oSession)
         {
 
         }
 
-        public void AutoTamperRequestBefore(Session oSession)
+        public virtual void AutoTamperRequestBefore(Session oSession)
         {
             if (Enable)
             {
@@ -47,35 +56,36 @@ namespace f0rger
             }
         }
 
-        public void AutoTamperResponseAfter(Session oSession)
+        public virtual void AutoTamperResponseAfter(Session oSession)
         {
-            if (Enable)
-            {
-                string path = new System.Uri("http://127.0.0.1" + oSession.url).AbsolutePath;
-                string file = Path.GetFileName(path);  // file.ext
+            ////暂时不需要处理响应体
+            //if (Enable)
+            //{
+            //    string path = new System.Uri("http://127.0.0.1" + oSession.url).AbsolutePath;
+            //    string file = Path.GetFileName(path);  // file.ext
 
-                HandlerResponse(oSession, file);
-            }
+            //    HandlerResponse(oSession, file);
+            //}
         }
 
-        public void AutoTamperResponseBefore(Session oSession)
-        {
-
-        }
-
-        public void OnBeforeReturningError(Session oSession)
+        public virtual void AutoTamperResponseBefore(Session oSession)
         {
 
         }
 
-        public void OnBeforeUnload()
+        public virtual void OnBeforeReturningError(Session oSession)
         {
 
         }
 
-        public void OnLoad()
+        public virtual void OnBeforeUnload()
         {
 
+        }
+
+        public virtual void OnLoad()
+        {
+            InitializeComponent();
         }
         #endregion
     }

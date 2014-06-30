@@ -32,15 +32,18 @@ namespace f0rger
         /// <summary>
         /// 挂载的文件列表
         /// </summary>
-        public List<string> Files { get; set; }
+        public List<FileMockEntity> Files { get; set; }
 
+        /// <summary>
+        /// 配置类
+        /// </summary>
         public ConfigEntity()
         {
             Enable = true;
             EnableTip = true;
             DebugMode = false;
             Profiles = new List<ProfileEntity>();
-            Files = new List<string>();
+            Files = new List<FileMockEntity>();
         }
     }
 }

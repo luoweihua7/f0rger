@@ -10,7 +10,7 @@ namespace f0rger
     /// <summary>
     /// 添加到列表的文件对象
     /// </summary>
-    public class FileHookItem
+    public class FileHookEntity
     {
         /// <summary>
         /// 是否启用
@@ -33,20 +33,28 @@ namespace f0rger
         /// </summary>
         private FileSystemWatcher fsw = new FileSystemWatcher();
 
-        public FileHookItem(string path, bool enable = true)
+        /// <summary>
+        /// 添加到列表的文件对象
+        /// </summary>
+        /// <param name="path">文件路径或者文件夹路径</param>
+        /// <param name="enable">是否挂载,默认挂载</param>
+        /// <param name="refresh">是否立即刷新文件列表数据,默认立即刷新</param>
+        public FileHookEntity(string path, bool enable = true, bool refresh = true)
         {
             FilePath = path;
             Enable = enable;
             Files = new List<string>();
 
-            Initialize();
+            Initialize(refresh); //初始化时,可能不需要刷新文件列表
         }
 
         /// <summary>
         /// 根据路径Path初始化文件列表Files
         /// </summary>
-        private void Initialize()
+        private void Initialize(bool refresh = true)
         {
+            if (!refresh) return;
+
             if (Directory.Exists(FilePath))
             {
                 //如果是目录,遍历
