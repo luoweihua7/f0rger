@@ -185,11 +185,7 @@ namespace f0rger
             foreach (var item in config.Files)
             {
                 //实例化每一项
-                string fileName = Path.GetFileName(item.Path);
-                ListViewItem lvi = new ListViewItem(fileName);
-                lvi.Checked = item.Enable;
-                lvi.SubItems.Add(item.Path);
-                this.lvMockFiles.Items.Add(lvi);
+                AddToListView(item.Path, item.Enable);
             }
 
             ChangeEnableEventArgs(null, null); //触发一次变更事件,还原组件状态
@@ -201,7 +197,8 @@ namespace f0rger
             bool _enable = config.Enable;
             config.Enable = false; //先禁用,待所有数据初始化完成时再启用
 
-            FileManageService.Initialize(config.Files); //初始化挂载列表
+            //TODO,方法有bug
+            //FileManageService.Initialize(config.Files); //初始化挂载列表
             config.Enable = _enable; //数据初始化完成,还原开关配置
 
             RestoreControls();
@@ -240,21 +237,17 @@ namespace f0rger
                     {
                         foreach (string filePath in Clipboard.GetFileDropList())
                         {
-                            ListViewItem lvi = new ListViewItem();
-                            if (Directory.Exists(filePath))
+                            //TODO 修改到正常模式
+                            if (true || FileManageService.Add(filePath, true, false))
                             {
-                                // 文件夹
-                                lvi.Text = "[Folder]";
-                            }
-                            else
-                            {
-                                // 文件
-                                lvi.Text = Path.GetFileName(filePath);
-                            }
+                                AddToListView(filePath); //添加到列表
 
-                            lvi.Checked = true;
-                            lvi.SubItems.Add(filePath);
-                            lvMockFiles.Items.Add(lvi);
+                                config.Files.Add(new FileMockEntity()
+                                {
+                                    Enable = true,
+                                    Path = filePath
+                                });
+                            }
                         }
 
                         //不往下执行
@@ -333,6 +326,25 @@ namespace f0rger
         {
             ListViewItem lvi = e.Item;
 
+        }
+
+        void AddToListView(string file, bool enable = true)
+        {
+            ListViewItem lvi = new ListViewItem();
+            if (Directory.Exists(file))
+            {
+                // 文件夹
+                lvi.Text = "[[Folder]]";
+            }
+            else
+            {
+                // 文件
+                lvi.Text = Path.GetFileName(file);
+            }
+
+            lvi.Checked = enable;
+            lvi.SubItems.Add(file);
+            lvMockFiles.Items.Add(lvi);
         }
 
         #endregion
