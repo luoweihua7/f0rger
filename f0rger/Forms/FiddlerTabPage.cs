@@ -6,6 +6,7 @@ using Fiddler;
 using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
+using System.Collections;
 
 namespace f0rger
 {
@@ -269,6 +270,7 @@ namespace f0rger
 
                 if (e.KeyCode == Keys.Delete)
                 {
+                    Hashtable ht;
                     foreach (ListViewItem item in lvMockFiles.SelectedItems)
                     {
                         //FileManageService.Remove(item.SubItems[1].Text, false);

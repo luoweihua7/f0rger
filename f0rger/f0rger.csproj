@@ -70,6 +70,7 @@
     <Compile Include="Services\FileMockService.cs" />
     <Compile Include="Services\LogService.cs" />
     <Compile Include="Services\ProfileService.cs" />
+    <Compile Include="Services\ToolkitService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="includes\icon.png" />
