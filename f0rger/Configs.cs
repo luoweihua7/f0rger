@@ -12,7 +12,7 @@ namespace f0rger
         /// <summary>
         /// 提示的小窗口显示时间
         /// </summary>
-        public static int dueTime = 1500;
+        public static int dueTime = 1600;
 
         private static string MyDocumentsDir = System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         private static string AppName = "Fiddler2";
@@ -31,7 +31,7 @@ namespace f0rger
         /// 命中规则后的颜色显示
         /// </summary>
         public static string Color = "#000000";
-        public static string BgColor = "#f0f0f0";
+        public static string BgColor = "#e9e9e9";
 
         public static string TabName = "f0rger";
     }

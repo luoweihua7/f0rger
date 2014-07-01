@@ -10,7 +10,7 @@ using System.Collections;
 
 namespace f0rger
 {
-    public class FiddlerTabPage : FileMockService
+    public class FiddlerTabPage : FiddlerService
     {
         #region 控件
         private Panel pSwitch;
@@ -26,10 +26,14 @@ namespace f0rger
         private Button btnAdd;
         private TabPage fiddlerTabPage;
 
+        private OpenFileDialog openDialog;
+
         private MiniTip frmTip;
         #endregion
 
-        public new ConfigEntity config;
+        public ConfigEntity config;
+
+        private Hashtable fileList = new Hashtable();
 
         public FiddlerTabPage()
         {
@@ -45,6 +49,9 @@ namespace f0rger
             this.btnClear = new Button();
             this.btnRemove = new Button();
             this.btnAdd = new Button();
+
+            this.openDialog = new OpenFileDialog();
+
             //提示语窗口
             frmTip = new MiniTip();
 
@@ -117,19 +124,16 @@ namespace f0rger
                 new ColumnHeader(){Text="Path",Width=500}
             });
             this.lvMockFiles.Dock = DockStyle.Fill;
-            this.lvMockFiles.ForeColor = SystemColors.WindowFrame;
             this.lvMockFiles.FullRowSelect = true;
             this.lvMockFiles.GridLines = true;
             this.lvMockFiles.Location = new Point(0, 0);
             this.lvMockFiles.Name = "lvMockFiles";
             this.lvMockFiles.ShowGroups = false;
             this.lvMockFiles.View = View.Details;
-            this.lvMockFiles.KeyDown += new KeyEventHandler(keyDown);
-            //this.lvMockFiles.MouseDown += new MouseEventHandler(listViewMouseDown);
-            //this.lvMockFiles.DragEnter += new DragEventHandler(listViewDropEnter);
-            //this.lvMockFiles.DragDrop += new DragEventHandler(listViewDragDrop);
-            //this.lvMockFiles.MouseClick += new MouseEventHandler(listViewMouseClick);
-            //this.lvMockFiles.ItemChecked += new ItemCheckedEventHandler(listViewChecked);
+            this.lvMockFiles.KeyDown += new KeyEventHandler(keyDown); //CTRL+C/V
+            this.lvMockFiles.DragEnter += new DragEventHandler(listViewDropEnter);
+            this.lvMockFiles.DragDrop += new DragEventHandler(listViewDragDrop); //拖进来
+            this.lvMockFiles.ItemChecked += new ItemCheckedEventHandler(listViewChecked); //点击勾选
 
             #region 按钮
             // 添加按钮
@@ -138,24 +142,28 @@ namespace f0rger
             this.btnAdd.Size = new Size(69, 23);
             this.btnAdd.Text = "Add";
             this.btnAdd.UseVisualStyleBackColor = true;
+            this.btnAdd.Click += new EventHandler(OnClickAddButton);
             // 删除按钮
             this.btnRemove.Location = new Point(78, 6);
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Size = new Size(69, 23);
             this.btnRemove.Text = "Remove";
             this.btnRemove.UseVisualStyleBackColor = true;
+            this.btnRemove.Click += new EventHandler(OnClickRemoveButton);
             // 刷新按钮
             this.btnRefresh.Location = new Point(153, 6);
             this.btnRefresh.Name = "btnRefresh";
             this.btnRefresh.Size = new Size(69, 23);
             this.btnRefresh.Text = "Refresh";
             this.btnRefresh.UseVisualStyleBackColor = true;
+            this.btnRefresh.Click += new EventHandler(OnClickRefreshButton);
             // 清除按钮
             this.btnClear.Location = new Point(228, 6);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new Size(69, 23);
             this.btnClear.Text = "Clear";
             this.btnClear.UseVisualStyleBackColor = true;
+            this.btnClear.Click += new EventHandler(OnClickClearButton);
             #endregion
 
             #endregion
@@ -183,11 +191,15 @@ namespace f0rger
             this.cbEnable.Checked = config.Enable;
             this.cbShowTip.Checked = config.ShowTip;
 
-            foreach (var item in config.Files)
+            var files = config.Files;
+            config.Files = new FileMockEntityList(); //重新初始化.
+            foreach (var item in files)
             {
                 //实例化每一项
+                //这里对自动对config.Files添加数据,为的是跟fileList引用一致,方便移除
                 AddToListView(item.Path, item.Enable);
             }
+            FileManageService.RefreshMockList(); //刷新挂载列表
 
             ChangeEnableEventArgs(null, null); //触发一次变更事件,还原组件状态
         }
@@ -198,7 +210,6 @@ namespace f0rger
             bool _enable = config.Enable;
             config.Enable = false; //先禁用,待所有数据初始化完成时再启用
 
-            //TODO,方法有bug
             //FileManageService.Initialize(config.Files); //初始化挂载列表
             config.Enable = _enable; //数据初始化完成,还原开关配置
 
@@ -234,28 +245,18 @@ namespace f0rger
             {
                 if (e.Control && config.Enable)
                 {
-                    if (e.KeyCode == Keys.V)
+                    if (e.KeyCode == Keys.V) //粘贴
                     {
                         foreach (string filePath in Clipboard.GetFileDropList())
                         {
-                            //TODO 修改到正常模式
-                            if (true || FileManageService.Add(filePath, true, false))
-                            {
-                                AddToListView(filePath); //添加到列表
-
-                                config.Files.Add(new FileMockEntity()
-                                {
-                                    Enable = true,
-                                    Path = filePath
-                                });
-                            }
+                            AddToListView(filePath); //添加到列表
                         }
+                        FileManageService.RefreshMockList();
 
-                        //不往下执行
                         e.Handled = true;
                         return;
                     }
-                    else if (e.KeyCode == Keys.A)
+                    else if (e.KeyCode == Keys.A) //全选
                     {
                         foreach (ListViewItem item in lvMockFiles.Items)
                         {
@@ -270,13 +271,14 @@ namespace f0rger
 
                 if (e.KeyCode == Keys.Delete)
                 {
-                    Hashtable ht;
-                    foreach (ListViewItem item in lvMockFiles.SelectedItems)
+                    if (lvMockFiles.SelectedItems.Count > 0)
                     {
-                        //FileManageService.Remove(item.SubItems[1].Text, false);
-                        lvMockFiles.Items.Remove(item);
+                        foreach (ListViewItem item in lvMockFiles.SelectedItems)
+                        {
+                            RemoveFromListView(item, false);
+                        }
+                        FileManageService.RefreshMockList();
                     }
-                    //FileManageService.RefreshMockList();
                 }
             }
         }
@@ -290,68 +292,142 @@ namespace f0rger
             string[] dropList = (string[])e.Data.GetData(DataFormats.FileDrop);
             foreach (string filePath in dropList)
             {
-                if (Directory.Exists(filePath)) continue; //忽略文件夹
-                //handlerAdd(filePath.ToLower());
+                AddToListView(filePath);
             }
+            FileManageService.RefreshMockList();
         }
-        void listViewMouseClick(object sender, EventArgs e)
-        {
-            if (lvMockFiles.SelectedItems.Count == 1)
-            {
-                ListViewItem lvi = lvMockFiles.SelectedItems[0];
-                string fileName = Path.GetFileName(lvi.Text).ToLower();
-                //handlerReplace(fileName);
-            }
-            else  //此处不会出现Count=0的情况，但会在按住Ctrl键点击ListViewItem时，Count>1的情况
-            {
-                //handlerRemove(string.Empty);
-            }
-        }
-        void listViewMouseDown(object sender, MouseEventArgs e)
-        {
-            if (lvMockFiles.HitTest(e.X, e.Y).Item == null)
-            {
-                //handlerReplace(string.Empty); //在ListView空白处点击时，清空Fiddler2的选中
-            }
 
-            //此处是为了双击时不触发listView的CheckBox状态改变
-            if (e.Clicks > 1)
-            {
-                ListViewItem lvi = lvMockFiles.GetItemAt(e.X, e.Y);
-                if (null != lvi)
-                {
-                    lvi.Checked = !lvi.Checked;
-                }
-            }
-        }
         void listViewChecked(object sender, ItemCheckedEventArgs e)
         {
             ListViewItem lvi = e.Item;
+            var enable = lvi.Checked;
 
+            string path = lvi.SubItems[1].Text.ToLower();
+            FileMockEntity fileMock = (FileMockEntity)fileList[path];
+            if (fileMock != null) //初始化添加的时候也会出发checked
+            {
+                fileMock.Enable = enable;
+                FileManageService.Update(path, enable, true);
+            }
         }
 
+        void OnClickAddButton(object sender, EventArgs e)
+        {
+            if (openDialog.ShowDialog() == DialogResult.OK)
+            {
+                string[] files = openDialog.FileNames;
+                foreach (string file in files)
+                {
+                    AddToListView(file, false);
+                }
+                FileManageService.RefreshMockList();
+            }
+        }
+
+        void OnClickRemoveButton(object sender, EventArgs e)
+        {
+            if (lvMockFiles.SelectedItems.Count > 0)
+            {
+                foreach (ListViewItem item in lvMockFiles.SelectedItems)
+                {
+                    RemoveFromListView(item, false);
+                }
+                FileManageService.RefreshMockList();
+            }
+        }
+
+        void OnClickRefreshButton(object sender, EventArgs e)
+        {
+            FileManageService.RefreshMockList();
+        }
+
+        void OnClickClearButton(object sender, EventArgs e)
+        {
+            if (lvMockFiles.Items.Count > 0)
+            {
+                foreach (ListViewItem lvi in lvMockFiles.Items)
+                {
+                    RemoveFromListView(lvi, false);
+                }
+                FileManageService.RefreshMockList();
+            }
+        }
+
+        /// <summary>
+        /// 添加到列表
+        /// <para>包括ListView列表,fileList列表,FileManagerService列表中</para>
+        /// <para>但是FileManagerService不刷新,为了循环调用此方法导致重复刷新</para>
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="enable"></param>
         void AddToListView(string file, bool enable = true)
         {
-            ListViewItem lvi = new ListViewItem();
-            if (Directory.Exists(file))
+            string str = file.ToLower();
+
+            if (fileList[str] != null)
             {
-                // 文件夹
-                lvi.Text = "[[Folder]]";
+                foreach (ListViewItem item in lvMockFiles.Items)
+                {
+                    //如果已经在列表中,则标记为勾选
+                    if (item.SubItems[1].Text == str)
+                    {
+                        item.Checked = true;
+                        break;
+                    }
+                }
+
+                FileMockEntity fileMock = (FileMockEntity)fileList[str];
+                fileMock.Enable = true; //引用类型
+                FileManageService.Update(str, true, false);
             }
             else
             {
-                // 文件
-                lvi.Text = Path.GetFileName(file);
-            }
+                FileManageService.Add(str, true, false);
 
-            lvi.Checked = enable;
-            lvi.SubItems.Add(file);
-            lvMockFiles.Items.Add(lvi);
+                ListViewItem lvi = new ListViewItem();
+                if (Directory.Exists(file))
+                {
+                    // 文件夹
+                    lvi.Text = "[[Folder]]";
+                }
+                else
+                {
+                    // 文件
+                    lvi.Text = Path.GetFileName(file).ToLower();
+                }
+
+                lvi.Checked = enable;
+                lvi.SubItems.Add(file.ToLower());
+                lvMockFiles.Items.Add(lvi);
+
+                var fileMock = new FileMockEntity() { Enable = enable, Path = str };
+                config.Files.Add(fileMock);
+                fileList.Add(str, fileMock); //添加到维护列表
+            }
+        }
+
+        void RemoveFromListView(ListViewItem lvi, bool refresh = true)
+        {
+            var filePath = lvi.SubItems[1].Text.ToLower();
+            FileManageService.Remove(filePath, false);
+            config.Files.Remove((FileMockEntity)fileList[filePath]);
+            fileList.Remove(filePath);
+            lvMockFiles.Items.Remove(lvi);
+
+            if (refresh)
+            {
+                FileManageService.RefreshMockList();
+            }
         }
 
         #endregion
 
         #region 重载
+
+        public override bool IsEnable()
+        {
+            return config.Enable;
+        }
 
         public override void OnLoad()
         {
@@ -367,6 +443,7 @@ namespace f0rger
 
         public override void OnMatchSession(string fileName)
         {
+            //弹窗
             if (config.ShowTip)
             {
                 frmTip.Show(fileName);

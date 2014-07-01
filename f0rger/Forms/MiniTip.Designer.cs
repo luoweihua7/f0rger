@@ -33,21 +33,20 @@
             // 
             // listBox
             // 
-            this.listBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.listBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listBox.ForeColor = System.Drawing.SystemColors.WindowFrame;
-            this.listBox.FormattingEnabled = true;
-            this.listBox.ItemHeight = 12;
+            this.listBox.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.listBox.ItemHeight = 15;
             this.listBox.Location = new System.Drawing.Point(0, 0);
+            this.listBox.Margin = new System.Windows.Forms.Padding(0);
             this.listBox.Name = "listBox";
-            this.listBox.Size = new System.Drawing.Size(273, 95);
+            this.listBox.Size = new System.Drawing.Size(250, 94);
             this.listBox.TabIndex = 0;
             // 
             // MiniTip
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(273, 95);
+            this.ClientSize = new System.Drawing.Size(250, 94);
             this.Controls.Add(this.listBox);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MaximizeBox = false;
@@ -55,7 +54,8 @@
             this.Name = "MiniTip";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
-            this.Text = "挂载";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
+            this.TopMost = true;
             this.ResumeLayout(false);
 
         }

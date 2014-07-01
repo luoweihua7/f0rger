@@ -47,12 +47,12 @@ namespace f0rger
         /// <param name="enable">是否启用挂载</param>
         /// <param name="refresh">是否刷新挂载列表.初始化时,不需要刷新.在完成之后才刷新</param>
         /// <returns></returns>
-        public static bool Add(string file, bool enable = true, bool refresh = true)
+        public static void Add(string file, bool enable = true, bool refresh = true)
         {
             if (fileList.ContainsKey(file))
             {
                 //如果已经在目录中,则标记为挂载
-                Update(file, true);
+                Update(file, true, refresh);
             }
             else
             {
@@ -63,15 +63,13 @@ namespace f0rger
                     RefreshMockList();
                 }
             }
-
-            return true;
         }
 
         /// <summary>
         /// 从挂载列表中删除文件或者文件夹
         /// </summary>
         /// <param name="file"></param>
-        public static void Remove(string file,bool refresh=true)
+        public static void Remove(string file, bool refresh = true)
         {
             if (fileList.ContainsKey(file))
             {
@@ -113,45 +111,50 @@ namespace f0rger
             {
                 fileMockList.Clear(); //清理索引列表
                 duplicateList.Clear(); //清理文件名重复列表
-                for (int i = 0, len = fileList.Count; i < len; i++)
+                if (fileList != null)
                 {
-                    var item = (FileHookEntity)fileList[i];
-                    item.Refresh();
-
-                    foreach (string path in item.Files)
+                    foreach (DictionaryEntry file in fileList)
                     {
-                        if (File.Exists(path)) //不存在的话就无视了
+                        var subitem = (FileHookEntity)file.Value;
+                        if (!subitem.Enable) continue; //没勾选的跳过
+
+                        subitem.Refresh();
+
+                        foreach (string path in subitem.Files)
                         {
-                            var fileName = Path.GetFileName(path).ToLower(); //统一小写
-
-                            //不存在列表再添加
-                            if (!fileMockList.ContainsKey(fileName))
+                            if (File.Exists(path)) //不存在的话就无视了
                             {
-                                //不在索引列表中,则添加到索引列表中
-                                fileMockList.Add(fileName, path);
-                            }
-                            else
-                            {
-                                //如果是同一文件,跳过
-                                string oldpath = (string)fileMockList[fileName];
-                                if (oldpath == path) continue;
+                                var fileName = Path.GetFileName(path).ToLower(); //统一小写
 
-                                //文件不同,添加到重复列表
-                                var list = (List<string>)duplicateList[fileName];
-                                if (list == null)
+                                //不存在列表再添加
+                                if (!fileMockList.ContainsKey(fileName))
                                 {
-                                    list = new List<string>();
-                                    list.Add(oldpath); //把旧的文件添加到列表
+                                    //不在索引列表中,则添加到索引列表中
+                                    fileMockList.Add(fileName, path);
                                 }
+                                else
+                                {
+                                    //如果是同一文件,跳过
+                                    string oldpath = (string)fileMockList[fileName];
+                                    if (oldpath == path) continue;
 
-                                list.Add(path);
+                                    //文件不同,添加到重复列表
+                                    var list = (List<string>)duplicateList[fileName];
+                                    if (list == null)
+                                    {
+                                        list = new List<string>();
+                                        list.Add(oldpath); //把旧的文件添加到列表
+                                    }
+
+                                    list.Add(path);
+                                }
                             }
                         }
                     }
                 }
             }
 
-            LogService.Log("File List loaded, hooking " + fileMockList.Count + " files.");
+            LogService.Log("[f0rger] list loaded, hooking " + fileMockList.Count + " files.");
         }
         #endregion
 
@@ -179,7 +182,7 @@ namespace f0rger
                 }
             }
 
-            return null;
+            return path;
         }
 
         #endregion
