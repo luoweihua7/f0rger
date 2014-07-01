@@ -28,7 +28,6 @@ namespace f0rger
             //显示区域
             //说明一下:ListBox比较变态,高度必须是ItemHeight的整数倍,然后加上Border之类,否则会自动缩减高度
             Rectangle workingArea = Screen.FromControl(this).WorkingArea;
-            LogService.Log("working:" + workingArea.Width + "|" + workingArea.Height + "  this:" + this.Width + "|" + this.Height);
             this.Location = new Point(workingArea.Width - this.Width, workingArea.Height - this.Height);
 
             //可见的项 数量
