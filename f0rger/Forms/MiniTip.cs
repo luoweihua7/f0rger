@@ -15,6 +15,7 @@ namespace f0rger
         private System.Threading.Timer timer;
         static int infinite = System.Threading.Timeout.Infinite; //只一次,不重复
         static bool isMouseEnter = false; //鼠标是否在窗口内,如果在窗口内,定时器停止计时
+        static int iTop = 0;
 
         public MiniTip()
         {
@@ -29,6 +30,10 @@ namespace f0rger
             Rectangle workingArea = Screen.FromControl(this).WorkingArea;
             LogService.Log("working:" + workingArea.Width + "|" + workingArea.Height + "  this:" + this.Width + "|" + this.Height);
             this.Location = new Point(workingArea.Width - this.Width, workingArea.Height - this.Height);
+
+            //可见的项 数量
+            iTop = (int)(this.listBox.Height / this.listBox.ItemHeight);
+
             //初始化定时器
             timer = new System.Threading.Timer(new TimerCallback(Hide), null, infinite, infinite);
             //不显示窗体
@@ -45,7 +50,9 @@ namespace f0rger
         public void Show(string fileName)
         {
             listBox.Items.Add(fileName);
-            //如果需要自动滚动到最后面,需要选中最后一个item
+            //滚到最下面
+            listBox.TopIndex = listBox.Items.Count - iTop;
+
             this.Show();
             TimeTick(isMouseEnter);
         }
