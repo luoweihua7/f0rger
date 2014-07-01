@@ -426,7 +426,14 @@ namespace f0rger
 
         public override bool IsEnable()
         {
-            return config.Enable;
+            if (config != null)
+            {
+                return config.Enable;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public override void OnLoad()
