@@ -13,9 +13,45 @@ namespace f0rger
     public abstract class FiddlerService : IAutoTamper, IFiddlerExtension
     {
         #region 虚函数,作为开关和逻辑处理
+        /// <summary>
+        /// 是否启用插件功能.主开关
+        /// </summary>
+        /// <returns></returns>
         public virtual bool IsEnable()
         {
             return false;
+        }
+
+        /// <summary>
+        /// 是否限速
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IsSpeedLimit()
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// 每秒限速值
+        /// <para>单位为KB</para>
+        /// <para></para>
+        /// </summary>
+        /// <returns></returns>
+        public virtual int GetSpeedLimitPerSecond()
+        {
+            return 1024000; //千兆
+        }
+
+        /// <summary>
+        /// 获取设定的限速值
+        /// <para>计算并返回每KB需要多少毫秒,最少为1ms</para>
+        /// </summary>
+        /// <returns></returns>
+        private string GetSpeedLimitValue()
+        {
+            int speed = GetSpeedLimitPerSecond();
+            if (speed <= 0) speed = 1; //容错
+            return Math.Ceiling((double)(1000 / speed)).ToString(); //计算每KB需要多少ms
         }
 
         public virtual void OnMatchSession(string fileName)
@@ -34,6 +70,15 @@ namespace f0rger
         {
             if (IsEnable())
             {
+                if (IsSpeedLimit())
+                {
+                    string speed = GetSpeedLimitValue();
+                    // Delay sends by 300ms per KB uploaded.
+                    oSession["request-trickle-delay"] = "300";
+                    // Delay receives by 150ms per KB downloaded.
+                    oSession["response-trickle-delay"] = speed;
+                }
+
                 string filePath = new System.Uri("http://127.0.0.1" + oSession.url).AbsolutePath;
                 string fileName = Path.GetFileName(filePath).ToLower();  // file.ext
 

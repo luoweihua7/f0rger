@@ -163,6 +163,8 @@ namespace f0rger
         public static string GetMockFilePath(string fileName)
         {
             string path = null;
+            if (fileMockList.Count == 0) return path;
+
             if (fileMockList.ContainsKey(fileName))
             {
                 path = (string)fileMockList[fileName];

@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
 using System.Collections;
+using f0rger.Properties;
 
 namespace f0rger
 {
@@ -16,7 +17,11 @@ namespace f0rger
         private Panel pSwitch;
         private CheckBox cbShowTip;
         private CheckBox cbEnable;
+        private CheckBox cbSpeedLimit;
         private Panel pProfile;
+        private ToolStrip stripProfile;
+        private ToolStripButton tsbManage;
+        private ToolStripButton tsbAll;
         private Panel pMock;
         private Panel pButton;
         private ListView lvMockFiles;
@@ -41,7 +46,9 @@ namespace f0rger
             this.pSwitch = new Panel();
             this.cbShowTip = new CheckBox();
             this.cbEnable = new CheckBox();
+            this.cbSpeedLimit = new CheckBox();
             this.pProfile = new Panel();
+            this.stripProfile = new ToolStrip();
             this.pMock = new Panel();
             this.lvMockFiles = new ListView();
             this.pButton = new Panel();
@@ -67,16 +74,18 @@ namespace f0rger
             // 主开关区域
             this.pSwitch.Controls.Add(this.cbShowTip);
             this.pSwitch.Controls.Add(this.cbEnable);
+            this.pSwitch.Controls.Add(this.cbSpeedLimit);
             this.pSwitch.Dock = DockStyle.Top;
             this.pSwitch.Location = new Point(0, 0);
             this.pSwitch.Name = "pSwitch";
             this.pSwitch.Height = 30;
 
             // 配置区域(未完成)
+            this.pProfile.Controls.Add(this.stripProfile);
             this.pProfile.Dock = DockStyle.Top;
             this.pProfile.Location = new Point(0, 30);
             this.pProfile.Name = "pProfile";
-            this.pProfile.Height = 10;
+            this.pProfile.Height = 25;
             this.pProfile.TabIndex = 1;
 
             // 挂载列表区域
@@ -116,6 +125,54 @@ namespace f0rger
             this.cbShowTip.Text = "ShowTip";
             this.cbShowTip.UseVisualStyleBackColor = true;
             this.cbShowTip.CheckedChanged += ChangeShowTipEventArgs;
+            //限速按钮
+            this.cbSpeedLimit.AutoSize = true;
+            this.cbSpeedLimit.Location = new Point(190, 8);
+            this.cbSpeedLimit.Name = "cbSimulate";
+            this.cbSpeedLimit.Size = new Size(66, 16);
+            this.cbSpeedLimit.Text = "SpeedLimit";
+            this.cbSpeedLimit.UseVisualStyleBackColor = true;
+            this.cbSpeedLimit.CheckedChanged += ChangeSpeedLimitEventArgs;
+
+            //配置栏
+            this.tsbManage = new ToolStripButton()
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Image,
+                ImageTransparentColor = Color.Magenta,
+                Image = Resources.settings,
+                Name = "tsbManage",
+                Text = "Manage",
+                ToolTipText = "Manage Profiles"
+            };
+            this.tsbManage.Click += OnManageProfileClick;
+            this.tsbAll = new ToolStripButton()
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Text,
+                Name = "tsbAllProfile",
+                Text = "All",
+                ToolTipText = "Match All Profiles",
+                CheckState = CheckState.Checked,
+                Checked = true //全部默认选中
+            };
+
+
+            this.stripProfile.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+                this.tsbManage,
+                new ToolStripSeparator(){
+                    Size=new System.Drawing.Size(6, 25)
+                },
+                this.tsbAll,
+                new ToolStripSeparator(){
+                    Size=new System.Drawing.Size(6, 25)
+                }
+            });
+            this.stripProfile.Location = new System.Drawing.Point(0, 0);
+            this.stripProfile.Name = "stripProfile";
+            this.stripProfile.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
+            this.stripProfile.Height = 25;
+            this.stripProfile.TabIndex = 0;
+            this.stripProfile.Text = "Profile";
+
             // 挂载列表
             this.lvMockFiles.AllowDrop = true;
             this.lvMockFiles.CheckBoxes = true;
@@ -207,11 +264,6 @@ namespace f0rger
         public void Initialize()
         {
             config = ConfigService.Read(); //从配置读取,失败的话会自动new一个
-            bool _enable = config.Enable;
-            config.Enable = false; //先禁用,待所有数据初始化完成时再启用
-
-            //FileManageService.Initialize(config.Files); //初始化挂载列表
-            config.Enable = _enable; //数据初始化完成,还原开关配置
 
             RestoreControls();
         }
@@ -227,6 +279,7 @@ namespace f0rger
 
             //控件的可用性
             cbShowTip.Enabled = enable;
+            cbSpeedLimit.Enabled = enable;
             lvMockFiles.Enabled = enable;
             btnAdd.Enabled = enable;
             btnRemove.Enabled = enable;
@@ -237,6 +290,17 @@ namespace f0rger
         void ChangeShowTipEventArgs(object sender, EventArgs e)
         {
             config.ShowTip = cbShowTip.Checked;
+        }
+
+        void ChangeSpeedLimitEventArgs(object sender, EventArgs e)
+        {
+            config.SpeedLimit = cbSpeedLimit.Checked;
+        }
+
+        void OnManageProfileClick(object sender, EventArgs e)
+        {
+            ProfileMgr mgr = new ProfileMgr();
+            mgr.ShowDialog();
         }
 
         void keyDown(object sender, KeyEventArgs e)
@@ -351,6 +415,11 @@ namespace f0rger
                 }
                 FileManageService.RefreshMockList();
             }
+        }
+
+        void AddProfile(string profile)
+        {
+
         }
 
         /// <summary>

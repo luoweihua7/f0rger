@@ -23,6 +23,11 @@ namespace f0rger
         public bool ShowTip { get; set; }
 
         /// <summary>
+        /// 是否限速
+        /// </summary>
+        public bool SpeedLimit { get; set; }
+
+        /// <summary>
         /// 是否显示日志信息
         /// </summary>
         public bool DebugMode { get; set; }

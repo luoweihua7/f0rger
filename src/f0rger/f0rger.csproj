@@ -46,11 +46,11 @@
     <Compile Include="Entities\FileMockEntity.cs" />
     <Compile Include="Entities\ProfileEntity.cs" />
     <Compile Include="Forms\FiddlerTabPage.cs" />
-    <Compile Include="Forms\ProfileFrm.cs">
+    <Compile Include="Forms\ProfileMgr.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\ProfileFrm.Designer.cs">
-      <DependentUpon>ProfileFrm.cs</DependentUpon>
+    <Compile Include="Forms\ProfileMgr.Designer.cs">
+      <DependentUpon>ProfileMgr.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -69,17 +69,18 @@
     <Compile Include="Services\FileManageService.cs" />
     <Compile Include="Services\LogService.cs" />
     <Compile Include="Services\ProfileService.cs" />
-    <Compile Include="Services\ToolkitService.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="includes\settings.png" />
+    <None Include="includes\add.png" />
     <Content Include="includes\icon.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Forms\MiniTip.resx">
       <DependentUpon>MiniTip.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ProfileFrm.resx">
-      <DependentUpon>ProfileFrm.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\ProfileMgr.resx">
+      <DependentUpon>ProfileMgr.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
