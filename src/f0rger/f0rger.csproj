@@ -57,6 +57,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Services\ControllerService.cs" />
     <Compile Include="Services\FiddlerService.cs" />
     <Compile Include="Forms\MiniTip.cs">
       <SubType>Form</SubType>
