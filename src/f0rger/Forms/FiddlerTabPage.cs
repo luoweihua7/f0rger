@@ -417,11 +417,6 @@ namespace f0rger
             }
         }
 
-        void AddProfile(string profile)
-        {
-
-        }
-
         /// <summary>
         /// 添加到列表
         /// <para>包括ListView列表,fileList列表,FileManagerService列表中</para>
