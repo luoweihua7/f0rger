@@ -6,8 +6,8 @@ How to use
 ==========
 ####Copy f0rger.dll to anyone folder below
 * C:\Users\\[User]\Documents\Fiddler2\Scripts 
-* C:\Program Files (x86)\Fiddler2\Scripts
-* C:\Program Files\Fiddler2\Scripts
+* C:\Program Files (x86)\Fiddler2\Scripts     [x64]
+* C:\Program Files\Fiddler2\Scripts           [x86]
 
 Create rules
 ============
@@ -17,9 +17,9 @@ Create rules
 
 Create profile
 ==============
-1, enable profiles first
-2, click manage button below enable checkbox
-3, add/delete/update profile(s)
+* enable profiles first
+* click manage button below enable checkbox
+* add/delete/update profile(s)
 
 TODO
 ====
