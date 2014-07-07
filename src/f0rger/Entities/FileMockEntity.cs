@@ -6,6 +6,7 @@ namespace f0rger
 {
     /// <summary>
     /// 文件挂载列表，与界面显示列表对应
+    /// <para>主要是用于配置文件的序列化保存和读取</para>
     /// </summary>
     [Serializable]
     public class FileMockEntity

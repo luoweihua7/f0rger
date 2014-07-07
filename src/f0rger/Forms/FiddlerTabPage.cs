@@ -6,7 +6,6 @@ using Fiddler;
 using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
-using System.Collections;
 using f0rger.Properties;
 
 namespace f0rger
@@ -14,512 +13,287 @@ namespace f0rger
     public class FiddlerTabPage : FiddlerService
     {
         #region 控件
-        private Panel pSwitch;
-        private CheckBox cbShowTip;
+        private MiniTip miniTip = new MiniTip();
+        private TabPage tabPage;
+        private ToolStrip toolBar;
         private CheckBox cbEnable;
+        private CheckBox cbShowTip;
+        private CheckBox cbProfile;
         private CheckBox cbSpeedLimit;
-        private Panel pProfile;
-        private ToolStrip stripProfile;
-        private ToolStripButton tsbManage;
-        private ToolStripButton tsbAll;
-        private Panel pMock;
-        private Panel pButton;
-        private ListView lvMockFiles;
-        private Button btnRefresh;
-        private Button btnClear;
-        private Button btnRemove;
-        private Button btnAdd;
-        private TabPage fiddlerTabPage;
-
-        private OpenFileDialog openDialog;
-
-        private MiniTip frmTip;
+        private ListView listView;
+        private List<Control> controls;
+        private OpenFileDialog dialog = new OpenFileDialog();
         #endregion
 
-        public ConfigEntity config;
-
-        private Hashtable fileList = new Hashtable();
-
-        public FiddlerTabPage()
-        {
-            // 初始化信息(从WindowsApplication项目中copy过来的)
-            this.pSwitch = new Panel();
-            this.cbShowTip = new CheckBox();
-            this.cbEnable = new CheckBox();
-            this.cbSpeedLimit = new CheckBox();
-            this.pProfile = new Panel();
-            this.stripProfile = new ToolStrip();
-            this.pMock = new Panel();
-            this.lvMockFiles = new ListView();
-            this.pButton = new Panel();
-            this.btnRefresh = new Button();
-            this.btnClear = new Button();
-            this.btnRemove = new Button();
-            this.btnAdd = new Button();
-
-            this.openDialog = new OpenFileDialog();
-
-            //提示语窗口
-            frmTip = new MiniTip();
-
-            InitializeComponent();
-        }
-
-        /// <summary>
-        /// 初始化组件
-        /// </summary>
         public void InitializeComponent()
         {
-            #region 面板区域,用于自动适应大小
-            // 主开关区域
-            this.pSwitch.Controls.Add(this.cbShowTip);
-            this.pSwitch.Controls.Add(this.cbEnable);
-            this.pSwitch.Controls.Add(this.cbSpeedLimit);
-            this.pSwitch.Dock = DockStyle.Top;
-            this.pSwitch.Location = new Point(0, 0);
-            this.pSwitch.Name = "pSwitch";
-            this.pSwitch.Height = 30;
+            #region 实例化控件
 
-            // 配置区域(未完成)
-            this.pProfile.Controls.Add(this.stripProfile);
-            this.pProfile.Dock = DockStyle.Top;
-            this.pProfile.Location = new Point(0, 30);
-            this.pProfile.Name = "pProfile";
-            this.pProfile.Height = 25;
-            this.pProfile.TabIndex = 1;
+            TabPage tp = new TabPage() { Text = Configs.AppName };
 
-            // 挂载列表区域
-            this.pMock.Controls.Add(this.lvMockFiles);
-            this.pMock.Dock = DockStyle.Fill;
-            this.pMock.Location = new Point(0, 40);
-            this.pMock.Name = "pMock";
-            this.pMock.Size = new Size(704, 397);
-            this.pMock.TabIndex = 2;
+            Panel pHead = new Panel() { Dock = DockStyle.Top, Location = new Point(0, 0), Height = 30, TabIndex = 0 };
+            Panel pTool = new Panel() { Dock = DockStyle.Top, Location = new Point(0, 30), Height = 25 };
+            Panel pMain = new Panel() { Dock = DockStyle.Fill, Location = new Point(0, 55) };
+            Panel pBottom = new Panel() { Dock = DockStyle.Bottom, Height = 35 };
 
-            // 功能按钮区域
-            this.pButton.Controls.Add(this.btnRefresh);
-            this.pButton.Controls.Add(this.btnClear);
-            this.pButton.Controls.Add(this.btnRemove);
-            this.pButton.Controls.Add(this.btnAdd);
-            this.pButton.Dock = DockStyle.Bottom;
-            this.pButton.Location = new Point(0, 437);
-            this.pButton.Name = "pButton";
-            this.pButton.Size = new Size(704, 33);
-            this.pButton.TabIndex = 3;
-            #endregion
+            CheckBox cbEnable = new CheckBox() { Text = "Enable", AutoSize = true, Location = new Point(3, 8), UseVisualStyleBackColor = true };
+            CheckBox cbShowTip = new CheckBox() { Text = "Show Tips", AutoSize = true, Location = new Point(160, 8), UseVisualStyleBackColor = true };
+            CheckBox cbProfile = new CheckBox() { Text = "Profiles", AutoSize = true, Location = new Point(250, 8), UseVisualStyleBackColor = true };
+            CheckBox cbSpeedLimit = new CheckBox() { Text = "Speed Limit", AutoSize = true, Location = new Point(320, 8), UseVisualStyleBackColor = true };
 
-            #region 功能区
-            // 主开关
-            this.cbEnable.AutoSize = true;
-            this.cbEnable.Location = new Point(3, 8);
-            this.cbEnable.Name = "cbEnable";
-            this.cbEnable.Size = new Size(60, 16);
-            this.cbEnable.Text = "Enable";
-            this.cbEnable.UseVisualStyleBackColor = true;
-            this.cbEnable.CheckedChanged += ChangeEnableEventArgs;
-            // 挂载提示选择框
-            this.cbShowTip.AutoSize = true;
-            this.cbShowTip.Location = new Point(92, 8);
-            this.cbShowTip.Name = "cbShowTip";
-            this.cbShowTip.Size = new Size(66, 16);
-            this.cbShowTip.Text = "ShowTip";
-            this.cbShowTip.UseVisualStyleBackColor = true;
-            this.cbShowTip.CheckedChanged += ChangeShowTipEventArgs;
-            //限速按钮
-            this.cbSpeedLimit.AutoSize = true;
-            this.cbSpeedLimit.Location = new Point(190, 8);
-            this.cbSpeedLimit.Name = "cbSimulate";
-            this.cbSpeedLimit.Size = new Size(66, 16);
-            this.cbSpeedLimit.Text = "SpeedLimit";
-            this.cbSpeedLimit.UseVisualStyleBackColor = true;
-            this.cbSpeedLimit.CheckedChanged += ChangeSpeedLimitEventArgs;
+            ToolStrip toolStrip = new ToolStrip() { Location = new Point(0, 0), RenderMode = ToolStripRenderMode.System, Height = 25 };
+            ToolStripButton tsbMgr = new ToolStripButton() { DisplayStyle = ToolStripItemDisplayStyle.Image, ImageTransparentColor = Color.Magenta, Image = Resources.settings };
 
-            //配置栏
-            this.tsbManage = new ToolStripButton()
-            {
-                DisplayStyle = ToolStripItemDisplayStyle.Image,
-                ImageTransparentColor = Color.Magenta,
-                Image = Resources.settings,
-                Name = "tsbManage",
-                Text = "Manage",
-                ToolTipText = "Manage Profiles"
-            };
-            this.tsbManage.Click += OnManageProfileClick;
-            this.tsbAll = new ToolStripButton()
-            {
-                DisplayStyle = ToolStripItemDisplayStyle.Text,
-                Name = "tsbAllProfile",
-                Text = "All",
-                ToolTipText = "Match All Profiles",
-                CheckState = CheckState.Checked,
-                Checked = true //全部默认选中
-            };
+            ListView lv = new ListView() { AllowDrop = true, CheckBoxes = true, Dock = DockStyle.Fill, FullRowSelect = true, GridLines = true, Location = new Point(0, 0), View = View.Details };
 
-
-            this.stripProfile.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-                this.tsbManage,
-                new ToolStripSeparator(){
-                    Size=new System.Drawing.Size(6, 25)
-                },
-                this.tsbAll,
-                new ToolStripSeparator(){
-                    Size=new System.Drawing.Size(6, 25)
-                }
-            });
-            this.stripProfile.Location = new System.Drawing.Point(0, 0);
-            this.stripProfile.Name = "stripProfile";
-            this.stripProfile.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.stripProfile.Height = 25;
-            this.stripProfile.TabIndex = 0;
-            this.stripProfile.Text = "Profile";
-
-            // 挂载列表
-            this.lvMockFiles.AllowDrop = true;
-            this.lvMockFiles.CheckBoxes = true;
-            this.lvMockFiles.Columns.AddRange(new ColumnHeader[] {
-                new ColumnHeader(){Text="File",Width=150},
-                new ColumnHeader(){Text="Path",Width=500}
-            });
-            this.lvMockFiles.Dock = DockStyle.Fill;
-            this.lvMockFiles.FullRowSelect = true;
-            this.lvMockFiles.GridLines = true;
-            this.lvMockFiles.Location = new Point(0, 0);
-            this.lvMockFiles.Name = "lvMockFiles";
-            this.lvMockFiles.ShowGroups = false;
-            this.lvMockFiles.View = View.Details;
-            this.lvMockFiles.KeyDown += new KeyEventHandler(keyDown); //CTRL+C/V
-            this.lvMockFiles.DragEnter += new DragEventHandler(listViewDropEnter);
-            this.lvMockFiles.DragDrop += new DragEventHandler(listViewDragDrop); //拖进来
-            this.lvMockFiles.ItemChecked += new ItemCheckedEventHandler(listViewChecked); //点击勾选
-
-            #region 按钮
-            // 添加按钮
-            this.btnAdd.Location = new Point(3, 6);
-            this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new Size(69, 23);
-            this.btnAdd.Text = "Add";
-            this.btnAdd.UseVisualStyleBackColor = true;
-            this.btnAdd.Click += new EventHandler(OnClickAddButton);
-            // 删除按钮
-            this.btnRemove.Location = new Point(78, 6);
-            this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new Size(69, 23);
-            this.btnRemove.Text = "Remove";
-            this.btnRemove.UseVisualStyleBackColor = true;
-            this.btnRemove.Click += new EventHandler(OnClickRemoveButton);
-            // 刷新按钮
-            this.btnRefresh.Location = new Point(153, 6);
-            this.btnRefresh.Name = "btnRefresh";
-            this.btnRefresh.Size = new Size(69, 23);
-            this.btnRefresh.Text = "Refresh";
-            this.btnRefresh.UseVisualStyleBackColor = true;
-            this.btnRefresh.Click += new EventHandler(OnClickRefreshButton);
-            // 清除按钮
-            this.btnClear.Location = new Point(228, 6);
-            this.btnClear.Name = "btnClear";
-            this.btnClear.Size = new Size(69, 23);
-            this.btnClear.Text = "Clear";
-            this.btnClear.UseVisualStyleBackColor = true;
-            this.btnClear.Click += new EventHandler(OnClickClearButton);
-            #endregion
+            Button btnAdd = new Button() { Location = new Point(3, 6), Size = new Size(69, 23), Text = "Add", UseVisualStyleBackColor = true };
+            Button btnRemove = new Button() { Location = new Point(78, 6), Size = new Size(69, 23), Text = "Remove", UseVisualStyleBackColor = true };
+            Button btnRefresh = new Button() { Location = new Point(153, 6), Size = new Size(69, 23), Text = "Refresh", UseVisualStyleBackColor = true };
+            Button btnClear = new Button() { Location = new Point(228, 6), Size = new Size(69, 23), Text = "Clear", UseVisualStyleBackColor = true };
 
             #endregion
 
-            // 标签页卡
-            this.fiddlerTabPage = new TabPage();
-            this.fiddlerTabPage.Text = Configs.TabName;
-            this.fiddlerTabPage.Controls.Add(this.pMock);
-            this.fiddlerTabPage.Controls.Add(this.pButton);
-            this.fiddlerTabPage.Controls.Add(this.pProfile);
-            this.fiddlerTabPage.Controls.Add(this.pSwitch);
+            #region 控件层级添加
 
-            //在fiddler中开辟新天地: 添加一个充满恶意的TabPage
-            FiddlerApplication.UI.imglSessionIcons.Images.Add("f0rger", f0rger.Properties.Resources.icon);
-            FiddlerApplication.UI.tabsViews.TabPages.Add(fiddlerTabPage);
-            fiddlerTabPage.ImageKey = "f0rger"; //TabPage的图标
+            tp.SuspendLayout();
+            tp.Controls.AddRange(new Control[] { pMain, pBottom, pTool, pHead }); //添加顺序为:Dock>Bottom>Top,有2个Top,则最顶上的最后加
+            pHead.Controls.AddRange(new Control[] { cbEnable, cbShowTip, cbProfile, cbSpeedLimit });
+            toolStrip.Items.AddRange(new ToolStripItem[] { tsbMgr, new ToolStripSeparator() { Size = new System.Drawing.Size(6, 25) } });
+            pTool.Controls.Add(toolStrip);
+            lv.Columns.AddRange(new ColumnHeader[] { new ColumnHeader() { Text = "File", Width = 150 }, new ColumnHeader() { Text = "Path", Width = 500 } });
+            pMain.Controls.Add(lv);
+            pBottom.Controls.AddRange(new Control[] { btnAdd, btnRemove, btnRefresh, btnClear });
+            tp.ResumeLayout(false);
+
+            #endregion
+
+            #region 控件事件
+
+            cbEnable.CheckedChanged += new EventHandler(ChangeEnableEventArgs);
+            cbShowTip.CheckedChanged += new EventHandler(ChangeShowTipEventArgs);
+            cbProfile.CheckedChanged += new EventHandler(ChangeProfileEventArgs);
+            cbSpeedLimit.CheckedChanged += new EventHandler(ChangeSpeedLimitEventArgs);
+
+            tsbMgr.Click += new EventHandler(OnManageProfileClick);
+
+            lv.KeyDown += new KeyEventHandler(OnListViewKeyDown); //CTRL+C/V
+            lv.DragEnter += new DragEventHandler(OnListViewDropEnter);
+            lv.DragDrop += new DragEventHandler(OnListViewDragDrop); //拖进来
+            lv.ItemChecked += new ItemCheckedEventHandler(OnListViewChecked); //点击勾选
+
+            btnAdd.Click += new EventHandler(OnClickAddButton);
+            btnRemove.Click += new EventHandler(OnClickRemoveButton);
+            btnRefresh.Click += new EventHandler(OnClickRefreshButton);
+            btnClear.Click += new EventHandler(OnClickClearButton);
+
+            #endregion
+
+            //保存到全局,方便调用
+            this.controls = new List<Control>() { cbShowTip, cbProfile, cbSpeedLimit, toolStrip, lv, btnAdd, btnRemove, btnRemove, btnRefresh, btnClear };
+            this.tabPage = tp;
+            this.cbEnable = cbEnable;
+            this.cbShowTip = cbShowTip;
+            this.cbProfile = cbProfile;
+            this.cbSpeedLimit = cbSpeedLimit;
+            this.toolBar = toolStrip;
+            this.listView = lv;
+
+            //关联
+            ListViewController.listView = listView;
+            ToolStripController.toolbar = toolStrip;
+
+            //加入到Fiddler中
+            FiddlerApplication.UI.imglSessionIcons.Images.Add(Configs.AppName, f0rger.Properties.Resources.icon);
+            FiddlerApplication.UI.tabsViews.TabPages.Add(this.tabPage);
+            this.tabPage.ImageKey = Configs.AppName;
+
+            cbSpeedLimit.Visible = false;
         }
 
         /// <summary>
-        /// 还原控件状态
-        /// <para>如设置,提示,列表等</para>
+        /// restore from config saved
         /// </summary>
-        public void RestoreControls()
+        public void Restore()
         {
-            this.cbEnable.Checked = config.Enable;
-            this.cbShowTip.Checked = config.ShowTip;
+            //load configs
+            ConfigEntity config = ConfigService.Read();
 
-            var files = config.Files;
-            config.Files = new FileMockEntityList(); //重新初始化.
-            foreach (var item in files)
+            //initialize profiles and files
+            ToolStripController.Add(config.Profiles);
+            ListViewController.Add(config.Files);
+
+            //restore switches
+            this.cbShowTip.Checked = config.EnableTip;
+            this.cbProfile.Checked = config.EnableProfile;
+            this.cbSpeedLimit.Checked = config.EnableLimit;
+            this.cbEnable.Checked = config.Enable; //last set, fire checked change event
+
+            if (!config.EnableProfile)
             {
-                //实例化每一项
-                //这里对自动对config.Files添加数据,为的是跟fileList引用一致,方便移除
-                AddToListView(item.Path, item.Enable);
+                //fire event when disabled
+                ChangeProfileEventArgs(this.cbProfile, null);
             }
-            FileManageService.RefreshMockList(); //刷新挂载列表
 
-            ChangeEnableEventArgs(null, null); //触发一次变更事件,还原组件状态
+            if (!config.Enable)
+            {
+                //fire event when disabled
+                ChangeEnableEventArgs(this.cbEnable, null);
+            }
         }
 
-        public void Initialize()
-        {
-            config = ConfigService.Read(); //从配置读取,失败的话会自动new一个
-
-            RestoreControls();
-        }
-
-        #region 控件事件区域
+        #region 控件事件实现
 
         void ChangeEnableEventArgs(object sender, EventArgs e)
         {
-            var enable = cbEnable.Checked;
+            CheckBox cb = (CheckBox)sender;
 
-            //保存
-            config.Enable = enable;
-
-            //控件的可用性
-            cbShowTip.Enabled = enable;
-            cbSpeedLimit.Enabled = enable;
-            lvMockFiles.Enabled = enable;
-            btnAdd.Enabled = enable;
-            btnRemove.Enabled = enable;
-            btnRefresh.Enabled = enable;
-            btnClear.Enabled = enable;
+            var enable = cb.Checked;
+            foreach (Control control in controls)
+            {
+                control.Enabled = enable;
+            }
+            Configs.Enable = enable;
         }
-
         void ChangeShowTipEventArgs(object sender, EventArgs e)
         {
-            config.ShowTip = cbShowTip.Checked;
+            CheckBox cb = (CheckBox)sender;
+            Configs.EnableTip = cb.Checked;
         }
-
+        void ChangeProfileEventArgs(object sender, EventArgs e)
+        {
+            var enable = ((CheckBox)sender).Checked;
+            ToolStripController.Set(enable);
+            Configs.EnableProfile = enable;
+        }
         void ChangeSpeedLimitEventArgs(object sender, EventArgs e)
         {
-            config.SpeedLimit = cbSpeedLimit.Checked;
+            CheckBox cb = (CheckBox)sender;
+            Configs.EnableLimit = cb.Checked;
         }
 
         void OnManageProfileClick(object sender, EventArgs e)
         {
-            ProfileMgr mgr = new ProfileMgr();
-            mgr.ShowDialog();
+            var frm = new ProfileMgr();
+            frm.ShowDialog();
         }
 
-        void keyDown(object sender, KeyEventArgs e)
+        void OnListViewKeyDown(object sender, KeyEventArgs e)
         {
-            if (FiddlerApplication.UI.tabsViews.SelectedTab == fiddlerTabPage)
+            if (FiddlerApplication.UI.tabsViews.SelectedTab == this.tabPage)
             {
-                if (e.Control && config.Enable)
+                if (e.Control && Configs.Enable)
                 {
-                    if (e.KeyCode == Keys.V) //粘贴
+                    if (e.KeyCode == Keys.V) //paste
                     {
-                        foreach (string filePath in Clipboard.GetFileDropList())
+                        List<string> list = new List<string>();
+                        foreach (string file in Clipboard.GetFileDropList())
                         {
-                            AddToListView(filePath); //添加到列表
+                            list.Add(file);
                         }
-                        FileManageService.RefreshMockList();
+                        ListViewController.Add(list);
 
                         e.Handled = true;
                         return;
                     }
-                    else if (e.KeyCode == Keys.A) //全选
+                    else if (e.KeyCode == Keys.A) //select all
                     {
-                        foreach (ListViewItem item in lvMockFiles.Items)
+                        foreach (ListViewItem item in this.listView.Items)
                         {
                             item.Selected = true;
                         }
 
-                        //不往下执行
                         e.Handled = true;
                         return;
                     }
                 }
 
-                if (e.KeyCode == Keys.Delete)
+                if (e.KeyCode == Keys.Delete) //remove selected items
                 {
-                    if (lvMockFiles.SelectedItems.Count > 0)
+                    if (this.listView.SelectedItems.Count > 0)
                     {
-                        foreach (ListViewItem item in lvMockFiles.SelectedItems)
-                        {
-                            RemoveFromListView(item, false);
-                        }
-                        FileManageService.RefreshMockList();
+                        ListViewController.Remove();
                     }
                 }
             }
         }
-
-        void listViewDropEnter(object sender, DragEventArgs e)
+        void OnListViewDropEnter(object sender, DragEventArgs e)
         {
             e.Effect = DragDropEffects.All;
         }
-        void listViewDragDrop(object sender, DragEventArgs e)
+        void OnListViewDragDrop(object sender, DragEventArgs e)
         {
             string[] dropList = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (string filePath in dropList)
+            List<string> list = new List<string>();
+            foreach (string file in dropList)
             {
-                AddToListView(filePath);
+                list.Add(file);
             }
-            FileManageService.RefreshMockList();
+            ListViewController.Add(list);
         }
-
-        void listViewChecked(object sender, ItemCheckedEventArgs e)
+        void OnListViewChecked(object sender, ItemCheckedEventArgs e)
         {
-            ListViewItem lvi = e.Item;
-            var enable = lvi.Checked;
-
-            string path = lvi.SubItems[1].Text.ToLower();
-            FileMockEntity fileMock = (FileMockEntity)fileList[path];
-            if (fileMock != null) //初始化添加的时候也会出发checked
-            {
-                fileMock.Enable = enable;
-                FileManageService.Update(path, enable, true);
-            }
+            var enable = e.Item.Checked;
+            var file = e.Item.SubItems[1].Text;
+            ListViewController.Update(file, enable);
         }
 
         void OnClickAddButton(object sender, EventArgs e)
         {
-            if (openDialog.ShowDialog() == DialogResult.OK)
+            if (dialog.ShowDialog() == DialogResult.OK)
             {
-                string[] files = openDialog.FileNames;
-                foreach (string file in files)
+                List<string> list = new List<string>();
+                foreach (string file in dialog.FileNames)
                 {
-                    AddToListView(file, false);
+                    list.Add(file);
                 }
-                FileManageService.RefreshMockList();
+                ListViewController.Add(list);
             }
         }
-
         void OnClickRemoveButton(object sender, EventArgs e)
         {
-            if (lvMockFiles.SelectedItems.Count > 0)
-            {
-                foreach (ListViewItem item in lvMockFiles.SelectedItems)
-                {
-                    RemoveFromListView(item, false);
-                }
-                FileManageService.RefreshMockList();
-            }
+            ListViewController.Remove();
         }
-
         void OnClickRefreshButton(object sender, EventArgs e)
         {
-            FileManageService.RefreshMockList();
+            ListViewController.Refresh();
         }
-
         void OnClickClearButton(object sender, EventArgs e)
         {
-            if (lvMockFiles.Items.Count > 0)
-            {
-                foreach (ListViewItem lvi in lvMockFiles.Items)
-                {
-                    RemoveFromListView(lvi, false);
-                }
-                FileManageService.RefreshMockList();
-            }
-        }
-
-        /// <summary>
-        /// 添加到列表
-        /// <para>包括ListView列表,fileList列表,FileManagerService列表中</para>
-        /// <para>但是FileManagerService不刷新,为了循环调用此方法导致重复刷新</para>
-        /// </summary>
-        /// <param name="file"></param>
-        /// <param name="enable"></param>
-        void AddToListView(string file, bool enable = true)
-        {
-            string str = file.ToLower();
-
-            if (fileList[str] != null)
-            {
-                foreach (ListViewItem item in lvMockFiles.Items)
-                {
-                    //如果已经在列表中,则标记为勾选
-                    if (item.SubItems[1].Text == str)
-                    {
-                        item.Checked = true;
-                        break;
-                    }
-                }
-
-                FileMockEntity fileMock = (FileMockEntity)fileList[str];
-                fileMock.Enable = true; //引用类型
-                FileManageService.Update(str, true, false);
-            }
-            else
-            {
-                FileManageService.Add(str, true, false);
-
-                ListViewItem lvi = new ListViewItem();
-                if (Directory.Exists(file))
-                {
-                    // 文件夹
-                    lvi.Text = "[[Folder]]";
-                }
-                else
-                {
-                    // 文件
-                    lvi.Text = Path.GetFileName(file).ToLower();
-                }
-
-                lvi.Checked = enable;
-                lvi.SubItems.Add(file.ToLower());
-                lvMockFiles.Items.Add(lvi);
-
-                var fileMock = new FileMockEntity() { Enable = enable, Path = str };
-                config.Files.Add(fileMock);
-                fileList.Add(str, fileMock); //添加到维护列表
-            }
-        }
-
-        void RemoveFromListView(ListViewItem lvi, bool refresh = true)
-        {
-            var filePath = lvi.SubItems[1].Text.ToLower();
-            FileManageService.Remove(filePath, false);
-            config.Files.Remove((FileMockEntity)fileList[filePath]);
-            fileList.Remove(filePath);
-            lvMockFiles.Items.Remove(lvi);
-
-            if (refresh)
-            {
-                FileManageService.RefreshMockList();
-            }
+            ListViewController.Clear();
         }
 
         #endregion
 
-        #region 重载
+        #region 功能实现
 
-        public override bool IsEnable()
+        private void Initialize()
         {
-            if (config != null)
-            {
-                return config.Enable;
-            }
-            else
-            {
-                return false;
-            }
+            this.InitializeComponent();
+            this.Restore();
         }
+
+        #endregion
+
+        #region 重载,实现Fiddler功能
 
         public override void OnLoad()
         {
-            //初始化数据,设置等
-            Initialize();
+            Initialize(); //功能入口
         }
 
         public override void OnBeforeUnload()
         {
-            //退出时先保存配置
-            ConfigService.Save(config);
+            ConfigService.Save();
         }
 
         public override void OnMatchSession(string fileName)
         {
-            //弹窗
-            if (config.ShowTip)
+            if (Configs.EnableTip)
             {
-                frmTip.Show(fileName);
+                miniTip.Show(fileName);
             }
         }
+
         #endregion
     }
 }

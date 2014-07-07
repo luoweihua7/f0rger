@@ -20,17 +20,23 @@ namespace f0rger
         /// <summary>
         /// 是否显示右下角的挂载提示窗口
         /// </summary>
-        public bool ShowTip { get; set; }
+        public bool EnableTip { get; set; }
 
         /// <summary>
         /// 是否限速
         /// </summary>
-        public bool SpeedLimit { get; set; }
+        public bool EnableLimit { get; set; }
 
         /// <summary>
-        /// 是否显示日志信息
+        /// 速度限制
+        /// <para>单位为: KB/s</para>
         /// </summary>
-        public bool DebugMode { get; set; }
+        public int LimitSpeed { get; set; }
+
+        /// <summary>
+        /// 是否启用配置
+        /// </summary>
+        public bool EnableProfile { get; set; }
 
         /// <summary>
         /// 挂载配置(如灰度,全网等)
@@ -47,11 +53,13 @@ namespace f0rger
         /// </summary>
         public ConfigEntity()
         {
-            Enable = true;
-            ShowTip = true;
-            DebugMode = false;
-            Profiles = new ProfileEntityList();
-            Files = new FileMockEntityList();
+            this.Enable = true;
+            this.EnableTip = true;
+            this.EnableLimit = false;
+            this.LimitSpeed = 1024000;
+            this.EnableProfile = false;
+            this.Profiles = new ProfileEntityList();
+            this.Files = new FileMockEntityList();
         }
     }
 }

@@ -15,51 +15,30 @@ namespace f0rger
         /// <summary>
         /// 配置规则列表
         /// </summary>
-        private static ProfileEntityList Profiles;
+        public static ProfileEntityList Profiles = Configs.Profiles;
+
+        /// <summary>
+        /// 需要处理的Host地址
+        /// </summary>
+        private static List<string> htHostList = new List<string>();
+
         /// <summary>
         /// 配置规则哈希表,用于快速索引到配置
         /// </summary>
-        private static Hashtable htProfiles;
-
-        /// <summary>
-        /// 配置管理服务
-        /// </summary>
-        static ProfileService()
-        {
-            Profiles = new ProfileEntityList();
-            htProfiles = new Hashtable();
-        }
-
-        /// <summary>
-        /// 设置关联的配置列表
-        /// </summary>
-        /// <param name="profiles"></param>
-        public static void Use(ProfileEntityList profiles)
-        {
-            lock (Profiles)
-            {
-                Profiles = profiles;
-                htProfiles = new Hashtable();
-                foreach (ProfileEntity profile in Profiles)
-                {
-                    htProfiles.Add(profile.Name, profile);
-                }
-            }
-        }
+        private static Hashtable htProfiles = new Hashtable();
 
         #region 配置规则的增删改
-        /// <summary>
-        /// 添加规则到数据列表
-        /// </summary>
-        /// <param name="name">规则名称</param>
-        /// <param name="enable">是否启用</param>
-        /// <param name="hosts">域名地址列表</param>
-        /// <returns></returns>
-        public static bool Add(string name, bool enable, string[] hosts)
+
+        public static ProfileEntity Add(string name, bool enable, string[] hosts, bool refresh = true)
         {
-            List<string> list = ConvertToList(hosts);
-            return Add(name, enable, list);
+            List<string> list = new List<string>();
+            foreach (string host in hosts)
+            {
+                list.Add(host);
+            }
+            return Add(name, enable, list, refresh);
         }
+
         /// <summary>
         /// 添加规则到数据列表
         /// </summary>
@@ -67,7 +46,7 @@ namespace f0rger
         /// <param name="enable">是否启用</param>
         /// <param name="hosts">域名地址列表</param>
         /// <returns></returns>
-        public static bool Add(string name, bool enable, List<string> hosts)
+        public static ProfileEntity Add(string name, bool enable, List<string> hosts, bool refresh = true)
         {
             ProfileEntity profile = new ProfileEntity()
             {
@@ -76,37 +55,62 @@ namespace f0rger
                 Hosts = hosts
             };
 
-            return Add(profile);
+            return Add(profile, refresh);
         }
         /// <summary>
         /// 添加规则到数据列表
         /// </summary>
         /// <param name="profile">规则实体</param>
         /// <returns></returns>
-        public static bool Add(ProfileEntity profile)
+        public static ProfileEntity Add(ProfileEntity profile, bool refresh = true)
         {
             if (htProfiles.ContainsKey(profile.Name))
-                return false;
+                return null;
 
             //保存
             htProfiles.Add(profile.Name, profile);
             Profiles.Add(profile);
-            return true;
+
+            if (refresh)
+            {
+                Refresh();
+            }
+
+            return profile;
+        }
+
+        public static void Update(string name, ProfileEntity profile)
+        {
+            if (htProfiles.ContainsKey(name))
+            {
+                ProfileEntity entity = (ProfileEntity)htProfiles[name];
+
+                //修改实体,实际是修改Profiles下的实体(引用类型)
+                entity.Name = profile.Name;
+                entity.Enable = profile.Enable;
+                entity.Hosts = profile.Hosts;
+
+                htProfiles.Remove(name);
+                htProfiles.Add(profile.Name, entity);
+
+                Refresh();
+            }
         }
 
         /// <summary>
         /// 删除规则
         /// </summary>
         /// <param name="name">需要删除的规则名称</param>
-        public static bool Remove(string name)
+        public static bool Remove(string name, bool refresh = true)
         {
             if (htProfiles.ContainsKey(name))
             {
-                var result = Remove((ProfileEntity)htProfiles[name]); //先删除实际的规则
+                var result = Remove((ProfileEntity)htProfiles[name], refresh); //先删除实际的规则
                 if (result)
                 {
                     htProfiles.Remove(name); //然后再删除哈希表
                 }
+
                 return result;
             }
 
@@ -116,53 +120,67 @@ namespace f0rger
         /// 删除规则
         /// </summary>
         /// <param name="profile">需要删除的规则实体</param>
-        public static bool Remove(ProfileEntity profile)
+        public static bool Remove(ProfileEntity profile, bool refresh = false)
         {
-            return Profiles.Remove(profile);
+            bool result = Profiles.Remove(profile);
+            if (refresh)
+            {
+                Refresh();
+            }
+            return result;
         }
 
         /// <summary>
-        /// 设置配置规则
+        /// 获取配置规则实体
         /// </summary>
-        /// <param name="name">规则名称</param>
-        /// <param name="enable">是否启用该规则</param>
-        public static void Set(string name, bool enable)
+        /// <param name="name">需要获取的配置规则名称</param>
+        /// <returns>规则实体</returns>
+        public static ProfileEntity Get(string name)
         {
             if (htProfiles.ContainsKey(name))
             {
                 ProfileEntity profile = (ProfileEntity)htProfiles[name];
-                profile.Enable = enable;
+                return profile;
             }
+            return null;
         }
+
         /// <summary>
-        /// 设置配置规则
+        /// 刷新配置列表中需要挂载的域名
         /// </summary>
-        /// <param name="name">规则名称</param>
-        /// <param name="enable">是否启用该规则</param>
-        /// <param name="hosts">域名地址列表</param>
-        public static void Set(string name, bool enable, string[] hosts)
+        public static void Refresh()
         {
-            if (htProfiles.ContainsKey(name))
+            lock (htHostList)
             {
-                ProfileEntity profile = (ProfileEntity)htProfiles[name];
-                profile.Enable = enable;
-                profile.Hosts = ConvertToList(hosts);
+                htHostList.Clear();
+                foreach (ProfileEntity profile in Profiles)
+                {
+                    if (profile.Enable)
+                    {
+                        //htHostList.AddRange(profile.Hosts);
+
+                        //不考虑性能了,排重
+                        foreach (string host in profile.Hosts)
+                        {
+                            if (!htHostList.Contains(host))
+                            {
+                                htHostList.Add(host);
+                            }
+                        }
+                    }
+                }
             }
+            LogService.Log("profile list refresh, match " + htHostList.Count + " hosts");
         }
+
         /// <summary>
-        /// 设置配置规则
+        /// 是否匹配到Host
         /// </summary>
-        /// <param name="name">规则名称</param>
-        /// <param name="enable">是否启用该规则</param>
-        /// <param name="hosts">域名地址列表</param>
-        public static void Set(string name, bool enable, List<string> hosts)
+        /// <param name="host">域名地址</param>
+        /// <returns></returns>
+        public static bool MatchHost(string host)
         {
-            if (htProfiles.ContainsKey(name))
-            {
-                ProfileEntity profile = (ProfileEntity)htProfiles[name];
-                profile.Enable = enable;
-                profile.Hosts = hosts;
-            }
+            return htHostList.Contains(host);
         }
 
         /// <summary>
@@ -179,21 +197,6 @@ namespace f0rger
                 list.Add(str);
             }
             return list;
-        }
-
-        /// <summary>
-        /// 获取配置规则实体
-        /// </summary>
-        /// <param name="name">需要获取的配置规则名称</param>
-        /// <returns>规则实体</returns>
-        private static ProfileEntity Get(string name)
-        {
-            if (htProfiles.ContainsKey(name))
-            {
-                ProfileEntity profile = (ProfileEntity)htProfiles[name];
-                return profile;
-            }
-            return null;
         }
         #endregion
     }

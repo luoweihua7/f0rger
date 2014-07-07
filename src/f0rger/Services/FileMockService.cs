@@ -7,10 +7,23 @@ using System.IO;
 
 namespace f0rger
 {
-    public class FileManageService
+    public class FileMockService
     {
         /// <summary>
+        /// 从配置中读取挂载列表
+        /// <para>引用类型</para>
+        /// </summary>
+        private static FileMockEntityList Files = Configs.Files;
+
+        /// <summary>
+        /// 挂载中的配置文件列表
+        /// <para>用于快速索引</para>
+        /// </summary>
+        private static Hashtable htFiles = new Hashtable();
+
+        /// <summary>
         /// 需要挂载的文件列表,已去重
+        /// <para>文件是否需要挂载,主要看这个哈希表</para>
         /// </summary>
         private static Hashtable fileMockList = new Hashtable();
 
@@ -23,21 +36,25 @@ namespace f0rger
         /// <summary>
         /// ListView中的文件列表
         /// </summary>
-        private static Hashtable fileList = new Hashtable();
+        private static Hashtable listviewFiles = new Hashtable();
 
         #region 供界面调用的方法
+
         /// <summary>
-        /// 读取配置成功后初始化监听列表
+        /// 批量添加挂载文件到列表
         /// </summary>
         /// <param name="files">挂载的文件列表</param>
-        public static void Initialize(List<FileMockEntity> files)
+        public static void Add(FileMockEntityList files)
         {
-            foreach (FileMockEntity item in files)
+            if (files != null && files.Count > 0)
             {
-                Add(item.Path, item.Enable, false); //不刷新挂载列表.全部添加完成后收工刷新
-            }
+                foreach (FileMockEntity entity in files)
+                {
+                    Add(entity.Path, entity.Enable, false);
+                }
 
-            RefreshMockList(); //收工调用刷新
+                Refresh();
+            }
         }
 
         /// <summary>
@@ -49,7 +66,7 @@ namespace f0rger
         /// <returns></returns>
         public static void Add(string file, bool enable = true, bool refresh = true)
         {
-            if (fileList.ContainsKey(file))
+            if (listviewFiles.ContainsKey(file))
             {
                 //如果已经在目录中,则标记为挂载
                 Update(file, true, refresh);
@@ -57,10 +74,15 @@ namespace f0rger
             else
             {
                 var fileHookItem = new FileHookEntity(file, enable, refresh);
-                fileList.Add(file, fileHookItem);
+                listviewFiles.Add(file, fileHookItem);
+
+                var fileMock = new FileMockEntity() { Enable = enable, Path = file };
+                Files.Add(fileMock);
+                htFiles.Add(file, fileMock); //添加到索引
+
                 if (enable && refresh)
                 {
-                    RefreshMockList();
+                    Refresh();
                 }
             }
         }
@@ -71,13 +93,18 @@ namespace f0rger
         /// <param name="file"></param>
         public static void Remove(string file, bool refresh = true)
         {
-            if (fileList.ContainsKey(file))
+            if (listviewFiles.ContainsKey(file))
             {
-                fileList.Remove(file);
+                var fileMock = (FileMockEntity)htFiles[file];
+
+                listviewFiles.Remove(file);
+                htFiles.Remove(file);
+                Files.Remove(fileMock);
+
                 if (refresh)
                 {
                     //批量删除时,最后再手工刷新
-                    RefreshMockList();
+                    Refresh();
                 }
             }
         }
@@ -89,14 +116,17 @@ namespace f0rger
         /// <param name="enable"></param>
         public static void Update(string file, bool enable, bool refresh = true)
         {
-            if (fileList.ContainsKey(file))
+            if (listviewFiles.ContainsKey(file))
             {
-                var item = (FileHookEntity)fileList[file];
+                var item = (FileHookEntity)listviewFiles[file];
                 item.Enable = enable;
+
+                var fileMock = (FileMockEntity)htFiles[file];
+                fileMock.Enable = enable;
 
                 if (refresh)
                 {
-                    RefreshMockList();
+                    Refresh();
                 }
             }
         }
@@ -105,15 +135,15 @@ namespace f0rger
         /// 重新计算需要挂载的文件列表
         /// <para>此方法会被重复调用,应该有性能问题,暂时想不到好的办法</para>
         /// </summary>
-        public static void RefreshMockList()
+        public static void Refresh()
         {
             lock (fileMockList)
             {
                 fileMockList.Clear(); //清理索引列表
                 duplicateList.Clear(); //清理文件名重复列表
-                if (fileList != null)
+                if (listviewFiles != null)
                 {
-                    foreach (DictionaryEntry file in fileList)
+                    foreach (DictionaryEntry file in listviewFiles)
                     {
                         var subitem = (FileHookEntity)file.Value;
                         if (!subitem.Enable) continue; //没勾选的跳过
@@ -154,7 +184,7 @@ namespace f0rger
                 }
             }
 
-            LogService.Log("[f0rger] list loaded, hooking " + fileMockList.Count + " files.");
+            LogService.Log("list loaded, hooking " + fileMockList.Count + " files.");
         }
         #endregion
 

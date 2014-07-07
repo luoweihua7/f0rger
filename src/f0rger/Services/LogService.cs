@@ -15,7 +15,7 @@ namespace f0rger
         {
             if (enable)
             {
-                Fiddler.FiddlerApplication.Log.LogString(msg);
+                Fiddler.FiddlerApplication.Log.LogString("[" + Configs.AppName + "] " + msg);
             }
         }
     }

@@ -9,6 +9,7 @@ namespace f0rger
 {
     /// <summary>
     /// 添加到列表的文件对象
+    /// <para>主要用于程序内的文件列表获取等</para>
     /// </summary>
     public class FileHookEntity
     {

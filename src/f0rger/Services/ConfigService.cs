@@ -39,14 +39,28 @@ namespace f0rger
                     fs.Close();
                     fs.Dispose();
                 }
+
+                LogService.Log("config loaded.");
             }
 
             return config;
         }
 
-        public static bool Save(ConfigEntity config)
+        public static bool Save()
         {
             var result = false;
+
+            //从Configs中读取配置并序列化保存到文件
+            ConfigEntity config = new ConfigEntity()
+            {
+                Enable = Configs.Enable,
+                EnableTip = Configs.EnableTip,
+                EnableLimit = Configs.EnableLimit,
+                LimitSpeed = Configs.LimitSpeed,
+                EnableProfile = Configs.EnableProfile,
+                Profiles = Configs.Profiles,
+                Files = Configs.Files
+            };
 
             if (!Directory.Exists(Configs.ConfigDir))
             {
@@ -78,8 +92,8 @@ namespace f0rger
     {
         public override Type BindToType(string assemblyName, string typeName)
         {
-            Assembly ass = Assembly.GetExecutingAssembly();
-            return ass.GetType(typeName);
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            return assembly.GetType(typeName);
         }
-    } 
+    }
 }
