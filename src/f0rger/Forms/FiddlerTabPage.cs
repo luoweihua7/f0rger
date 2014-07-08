@@ -42,7 +42,7 @@ namespace f0rger
             CheckBox cbSpeedLimit = new CheckBox() { Text = "Speed Limit", AutoSize = true, Location = new Point(320, 8), UseVisualStyleBackColor = true };
 
             ToolStrip toolStrip = new ToolStrip() { Location = new Point(0, 0), RenderMode = ToolStripRenderMode.System, Height = 25 };
-            ToolStripButton tsbMgr = new ToolStripButton() { DisplayStyle = ToolStripItemDisplayStyle.Image, ImageTransparentColor = Color.Magenta, Image = Resources.settings };
+            ToolStripButton tsbMgr = new ToolStripButton() { DisplayStyle = ToolStripItemDisplayStyle.Image, ImageTransparentColor = Color.Magenta, Image = Resources.edit };
 
             ListView lv = new ListView() { AllowDrop = true, CheckBoxes = true, Dock = DockStyle.Fill, FullRowSelect = true, GridLines = true, Location = new Point(0, 0), View = View.Details };
 
@@ -60,7 +60,7 @@ namespace f0rger
             pHead.Controls.AddRange(new Control[] { cbEnable, cbShowTip, cbProfile, cbSpeedLimit });
             toolStrip.Items.AddRange(new ToolStripItem[] { tsbMgr, new ToolStripSeparator() { Size = new System.Drawing.Size(6, 25) } });
             pTool.Controls.Add(toolStrip);
-            lv.Columns.AddRange(new ColumnHeader[] { new ColumnHeader() { Text = "File", Width = 150 }, new ColumnHeader() { Text = "Path", Width = 500 } });
+            lv.Columns.AddRange(new ColumnHeader[] { new ColumnHeader() { Text = "File", Width = 150 }, new ColumnHeader() { Text = "Path", Width = 380 } });
             pMain.Controls.Add(lv);
             pBottom.Controls.AddRange(new Control[] { btnAdd, btnRemove, btnRefresh, btnClear });
             tp.ResumeLayout(false);

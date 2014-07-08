@@ -76,11 +76,11 @@ namespace f0rger
         public static string BgColor = "#e9e9e9";
 
         /// <summary>
-        /// 标签页卡名称
+        /// 应用名称
         /// </summary>
-        public static string AppName = "f0rger"; //just a name
+        public static string AppName = "F0rger"; //just a name
 
-        public static string FolderName = "[[FOLDER]]";
+        public static string FolderName = "{{FOLDER}}";
 
         #endregion
     }

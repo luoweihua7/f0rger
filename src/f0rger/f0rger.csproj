@@ -73,11 +73,8 @@
     <Compile Include="Services\ProfileService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="includes\unchecked.png" />
     <None Include="includes\settings.png" />
-    <None Include="includes\add.png" />
-    <None Include="includes\checked.png" />
-    <None Include="includes\addon.png" />
+    <Content Include="includes\edit.png" />
     <Content Include="includes\icon.png" />
   </ItemGroup>
   <ItemGroup>
