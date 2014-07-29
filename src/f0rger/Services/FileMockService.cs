@@ -200,6 +200,8 @@ namespace f0rger
                 path = (string)fileMockList[fileName];
                 if (!File.Exists(path))
                 {
+                    path = null; //不存在
+
                     //索引列表中的文件不存在,查询重复列表,取得一个文件名相同的并且存在的文件.
                     //这里可能会造成错误挂载
                     List<string> list = (List<string>)duplicateList[fileName];
