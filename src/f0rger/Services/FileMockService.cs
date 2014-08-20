@@ -193,7 +193,7 @@ namespace f0rger
         public static string GetMockFilePath(string fileName)
         {
             string path = null;
-            if (fileMockList == null || fileMockList.Count == 0) return path;
+            if (fileMockList == null || fileMockList.Count == 0 || string.IsNullOrEmpty(fileName)) return path;
 
             if (fileMockList.ContainsKey(fileName))
             {
@@ -205,12 +205,15 @@ namespace f0rger
                     //索引列表中的文件不存在,查询重复列表,取得一个文件名相同的并且存在的文件.
                     //这里可能会造成错误挂载
                     List<string> list = (List<string>)duplicateList[fileName];
-                    foreach (var str in list)
+                    if (list != null)
                     {
-                        if (File.Exists(str))
+                        foreach (var str in list)
                         {
-                            path = str;
-                            break;
+                            if (File.Exists(str))
+                            {
+                                path = str;
+                                break;
+                            }
                         }
                     }
                 }
