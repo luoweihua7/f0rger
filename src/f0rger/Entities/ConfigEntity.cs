@@ -28,6 +28,11 @@ namespace f0rger
         public bool EnableLimit { get; set; }
 
         /// <summary>
+        /// 严格路径模式
+        /// </summary>
+        public bool StrictMode { get; set; }
+
+        /// <summary>
         /// 速度限制
         /// <para>单位为: KB/s</para>
         /// </summary>
@@ -55,6 +60,7 @@ namespace f0rger
         {
             this.Enable = true;
             this.EnableTip = true;
+            this.StrictMode = false;
             this.EnableLimit = false;
             this.LimitSpeed = 1024000;
             this.EnableProfile = false;

@@ -20,6 +20,7 @@ namespace f0rger
         private CheckBox cbShowTip;
         private CheckBox cbProfile;
         private CheckBox cbSpeedLimit;
+        private CheckBox cbStrictMode;
         private ListView listView;
         private List<Control> controls;
         private OpenFileDialog dialog = new OpenFileDialog();
@@ -39,7 +40,8 @@ namespace f0rger
             CheckBox cbEnable = new CheckBox() { Text = "Enable", AutoSize = true, Location = new Point(3, 8), UseVisualStyleBackColor = true };
             CheckBox cbShowTip = new CheckBox() { Text = "Show Tips", AutoSize = true, Location = new Point(160, 8), UseVisualStyleBackColor = true };
             CheckBox cbProfile = new CheckBox() { Text = "Profiles", AutoSize = true, Location = new Point(250, 8), UseVisualStyleBackColor = true };
-            CheckBox cbSpeedLimit = new CheckBox() { Text = "Speed Limit", AutoSize = true, Location = new Point(320, 8), UseVisualStyleBackColor = true };
+            CheckBox cbStrictMode = new CheckBox() { Text = "Strict Mode", AutoSize = true, Location = new Point(320, 8), UseVisualStyleBackColor = true };
+            CheckBox cbSpeedLimit = new CheckBox() { Text = "Speed Limit", AutoSize = true, Location = new Point(410, 8), UseVisualStyleBackColor = true };
 
             ToolStrip toolStrip = new ToolStrip() { Location = new Point(0, 0), RenderMode = ToolStripRenderMode.System, Height = 25 };
             ToolStripButton tsbMgr = new ToolStripButton() { DisplayStyle = ToolStripItemDisplayStyle.Image, ImageTransparentColor = Color.Magenta, Image = Resources.edit };
@@ -57,7 +59,7 @@ namespace f0rger
 
             tp.SuspendLayout();
             tp.Controls.AddRange(new Control[] { pMain, pBottom, pTool, pHead }); //添加顺序为:Dock>Bottom>Top,有2个Top,则最顶上的最后加
-            pHead.Controls.AddRange(new Control[] { cbEnable, cbShowTip, cbProfile, cbSpeedLimit });
+            pHead.Controls.AddRange(new Control[] { cbEnable, cbShowTip, cbProfile, cbStrictMode, cbSpeedLimit });
             toolStrip.Items.AddRange(new ToolStripItem[] { tsbMgr, new ToolStripSeparator() { Size = new System.Drawing.Size(6, 25) } });
             pTool.Controls.Add(toolStrip);
             lv.Columns.AddRange(new ColumnHeader[] { new ColumnHeader() { Text = "File", Width = 150 }, new ColumnHeader() { Text = "Path", Width = 380 } });
@@ -72,6 +74,7 @@ namespace f0rger
             cbEnable.CheckedChanged += new EventHandler(ChangeEnableEventArgs);
             cbShowTip.CheckedChanged += new EventHandler(ChangeShowTipEventArgs);
             cbProfile.CheckedChanged += new EventHandler(ChangeProfileEventArgs);
+            cbStrictMode.CheckedChanged += new EventHandler(ChangeStrictModeEventArgs);
             cbSpeedLimit.CheckedChanged += new EventHandler(ChangeSpeedLimitEventArgs);
 
             tsbMgr.Click += new EventHandler(OnManageProfileClick);
@@ -89,11 +92,12 @@ namespace f0rger
             #endregion
 
             //保存到全局,方便调用
-            this.controls = new List<Control>() { cbShowTip, cbProfile, cbSpeedLimit, toolStrip, lv, btnAdd, btnRemove, btnRemove, btnRefresh, btnClear };
+            this.controls = new List<Control>() { cbShowTip, cbProfile, cbStrictMode, cbSpeedLimit, toolStrip, lv, btnAdd, btnRemove, btnRemove, btnRefresh, btnClear };
             this.tabPage = tp;
             this.cbEnable = cbEnable;
             this.cbShowTip = cbShowTip;
             this.cbProfile = cbProfile;
+            this.cbStrictMode = cbStrictMode;
             this.cbSpeedLimit = cbSpeedLimit;
             this.toolBar = toolStrip;
             this.listView = lv;
@@ -107,6 +111,7 @@ namespace f0rger
             FiddlerApplication.UI.tabsViews.TabPages.Add(this.tabPage);
             this.tabPage.ImageKey = Configs.AppName;
 
+            cbStrictMode.Visible = false;
             cbSpeedLimit.Visible = false;
         }
 
@@ -126,6 +131,7 @@ namespace f0rger
             this.cbShowTip.Checked = config.EnableTip;
             this.cbProfile.Checked = config.EnableProfile;
             this.cbSpeedLimit.Checked = config.EnableLimit;
+            this.cbStrictMode.Checked = config.StrictMode;
             this.cbEnable.Checked = config.Enable; //last set, fire checked change event
 
             if (!config.EnableProfile)
@@ -164,6 +170,11 @@ namespace f0rger
             var enable = ((CheckBox)sender).Checked;
             ToolStripController.Set(enable);
             Configs.EnableProfile = enable;
+        }
+        void ChangeStrictModeEventArgs(object sender, EventArgs e)
+        {
+            CheckBox cb = (CheckBox)sender;
+            Configs.StrictMode = cb.Checked;
         }
         void ChangeSpeedLimitEventArgs(object sender, EventArgs e)
         {

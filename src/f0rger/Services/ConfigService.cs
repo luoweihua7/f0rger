@@ -55,6 +55,7 @@ namespace f0rger
             {
                 Enable = Configs.Enable,
                 EnableTip = Configs.EnableTip,
+                StrictMode = Configs.StrictMode,
                 EnableLimit = Configs.EnableLimit,
                 LimitSpeed = Configs.LimitSpeed,
                 EnableProfile = Configs.EnableProfile,

@@ -26,6 +26,12 @@ namespace f0rger
         public static bool EnableLimit = false;
 
         /// <summary>
+        /// 严格模式
+        /// <para>严格匹配路径,仅对目录挂载有效</para>
+        /// </summary>
+        public static bool StrictMode = false;
+
+        /// <summary>
         /// 速度限制
         /// <para>单位为: KB/s</para>
         /// </summary>

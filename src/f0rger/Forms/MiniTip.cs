@@ -48,9 +48,9 @@ namespace f0rger
         /// <param name="string">文件名称</param>
         public void Show(string fileName)
         {
-            listBox.Items.Add(fileName);
+            this.listBox.Items.Add(fileName);
             //滚到最下面
-            listBox.TopIndex = listBox.Items.Count - iTop;
+            this.listBox.TopIndex = this.listBox.Items.Count - iTop;
 
             this.Show();
             TimeTick(isMouseEnter);
@@ -59,7 +59,7 @@ namespace f0rger
         private void Hide(object state)
         {
             //只隐藏,不关闭
-            listBox.Items.Clear();
+            this.listBox.Items.Clear();
             this.Hide();
         }
 
