@@ -39,8 +39,6 @@ namespace f0rger
             this.Hide();
         }
 
-        
-
         /// <summary>
         /// 添加要提示的文件
         /// <para>通过添加文件来触发提示窗口</para>
@@ -59,8 +57,11 @@ namespace f0rger
         private void Hide(object state)
         {
             //只隐藏,不关闭
-            this.listBox.Items.Clear();
-            this.Hide();
+            lock (this.listBox) //多线程会触发异常???
+            {
+                this.listBox.Items.Clear();
+                this.Hide();
+            }
         }
 
         /// <summary>

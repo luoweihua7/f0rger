@@ -61,7 +61,7 @@ namespace f0rger
         /// <summary>
         /// 提示的小窗口显示时间
         /// </summary>
-        public static int dueTime = 1600;
+        public static int dueTime = 2000;
 
         /// <summary>
         /// 配置的保存目录
