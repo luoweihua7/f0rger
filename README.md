@@ -1,3 +1,5 @@
+use [this](https://github.com/luoweihua7/locality) instead
+
 What's this
 ===========
 This is a fiddler plugin. replace response like autoresponser but create rule quicker.
